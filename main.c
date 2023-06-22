@@ -7,6 +7,7 @@
 #include <errno.h>
 #include <search.h>
 #include <signal.h>
+#include <fcntl.h>
 #include <unistd.h> // per sleep
 
 #define NUM_ELEM 1000000
@@ -52,13 +53,41 @@ int conta(char *s){
 
 }
 
+ssize_t readn(int fd, void *ptr, size_t n) {  
+   size_t   nleft;
+   ssize_t  nread;
+ 
+   nleft = n;
+   while (nleft > 0) {
+     if((nread = read(fd, ptr, nleft)) < 0) {
+        if (nleft == n) return -1; /* error, return -1 */
+        else break; /* error, return amount read so far */
+     } else if (nread == 0) break; /* EOF */
+     nleft -= nread;
+     ptr   += nread;
+   }
+   return(n - nleft); /* return >= 0 */
+}
+
 int main(int argc, char **argv){
     assert(argc>2);
     int num_writers = atoi(argv[1]);
     int num_readers = atoi(argv[2]);
 
+    char buf[3];
+
     int hash_table = hcreate(NUM_ELEM);
     if(hash_table == 0) terminate("Error creation hash table");
-    printf("daje");
+
+    int fd = open("caposc", O_RDONLY);
+    int bytesread = 0;
+
+    readn(fd, &buf, sizeof(buf));
+
+    for(int i = 0; i < 3; i++){
+      printf("%c", buf[i]);
+    }
+
+    close(fd);
     return 0;
 }
