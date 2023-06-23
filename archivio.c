@@ -70,22 +70,21 @@ ssize_t readn(int fd, void *ptr, size_t n) {
 }
 
 int main(int argc, char **argv){
-    assert(argc>2);
+    // assert(argc == 3);
     int num_writers = atoi(argv[1]);
     int num_readers = atoi(argv[2]);
 
     char buf[3];
-
     int hash_table = hcreate(NUM_ELEM);
     if(hash_table == 0) terminate("Error creation hash table");
-
+    printf("ciao");
     int fd = open("caposc", O_RDONLY);
     int bytesread = 0;
 
-    readn(fd, &buf, sizeof(buf));
-
-    for(int i = 0; i < 3; i++){
-      printf("%c", buf[i]);
+    while (1) {
+      char temp;
+      if (read(fd, &temp, 1) < 1) break;
+      fprintf(stderr, "chaine : %c\n", temp);
     }
 
     close(fd);

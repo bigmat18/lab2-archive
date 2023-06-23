@@ -82,10 +82,6 @@ int main(int argv, char** argc){
         e = writen(fd_skt, &tmp, sizeof(tmp));
         if (e != sizeof(int)) terminate("Errore write");
 
-        // char el;
-        // e = readn(fd_skt,&el,sizeof(el));
-        // if(e != sizeof(char)) terminate("Errore read");
-        // assert(el == 'x');
         e = writen(fd_skt, &buffer, buf_lenght);
         if (e != buf_lenght) terminate("Errore write");
         break;
