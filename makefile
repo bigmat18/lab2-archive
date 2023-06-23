@@ -5,4 +5,4 @@ CFLAGS=-std=c11 -Wall -O -g
 LDLIBS=-lm
 
 # se si scrive solo make di default compila main.c
-all: main
+all: archivio client1

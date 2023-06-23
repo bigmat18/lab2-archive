@@ -9,23 +9,36 @@ import posix
 HOST = "127.0.0.1"  
 PORT = 58449
 
-# configurazione del logging
-# il logger scrive su un file con nome uguale al nome del file eseguibile
 logging.basicConfig(filename=os.path.basename(sys.argv[0][:-3]) + '.log',
                     level=logging.DEBUG, datefmt='%d/%m/%y %H:%M:%S',
                     format='%(asctime)s - %(levelname)s - %(message)s')
 
+def recv_all(conn,n):
+  chunks = b''
+  bytes_recd = 0
+  while bytes_recd < n:
+    chunk = conn.recv(min(n - bytes_recd, 1024))
+    if len(chunk) == 0:
+      raise RuntimeError("socket connection broken")
+    chunks += chunk
+    bytes_recd = bytes_recd + len(chunk)
+  return chunks
+
 def main(conn, addr):
     with conn:
-        pipe = os.open("caposc", os.O_WRONLY)
-        while True:
-            lenght = conn.recv(4)
-            lenght = struct.unpack("!i", lenght)
-            assert lenght > 0
-            data = conn.recv(lenght)
-            if not data: break
-            os.write(pipe, data.encode())
-        os.close("caposc")
+        print(f"Contattato da {addr}")
+        # pipe = os.open("caposc", os.O_WRONLY)
+        data = recv_all(conn, 4)
+        assert len(data) == 4
+        lenght = struct.unpack("!i", data)[0]
+        assert lenght > 0
+        data = recv_all(conn, lenght)
+        assert len(data) == lenght
+        import codecs
+        print(data, type(data), codecs.decode(data, 'utf-8'))
+        # print("ciao" + data.decode("utf-8"))
+        # os.write(pipe, data.encode())
+        # os.close("caposc")
             
 
 if __name__ == "__main__":
@@ -37,7 +50,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
     assert args.m > 0 or args.r or args.w, "Il numero di thread deve essere maggiore di 0"
   
-    subprocess.Popen(['./main', str(args.r), str(args.w)])
+    #subprocess.Popen(['./main', str(args.r), str(args.w)])
 
     if not os.path.exists("caposc"):
         os.mkfifo("caposc")

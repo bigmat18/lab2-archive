@@ -1,14 +1,14 @@
-#define _GNU_SOURCE  /* See feature_test_macros(7) */
-#include <stdio.h>   // permette di usare scanf printf etc ...
-#include <stdlib.h>  // conversioni stringa/numero exit() etc ...
-#include <stdbool.h> // gestisce tipo bool (variabili booleane)
-#include <assert.h>  // permette di usare la funzione assert
-#include <string.h>  // confronto/copia/etc di stringhe
+#define _GNU_SOURCE
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdbool.h>
+#include <assert.h>
+#include <string.h>
 #include <errno.h>
 #include <search.h>
 #include <signal.h>
 #include <fcntl.h>
-#include <unistd.h> // per sleep
+#include <unistd.h>
 
 #define NUM_ELEM 1000000
 #define PC_BUFFER_LEN 10
@@ -60,13 +60,13 @@ ssize_t readn(int fd, void *ptr, size_t n) {
    nleft = n;
    while (nleft > 0) {
      if((nread = read(fd, ptr, nleft)) < 0) {
-        if (nleft == n) return -1; /* error, return -1 */
-        else break; /* error, return amount read so far */
-     } else if (nread == 0) break; /* EOF */
+        if (nleft == n) return -1;
+        else break;
+     } else if (nread == 0) break;
      nleft -= nread;
      ptr   += nread;
    }
-   return(n - nleft); /* return >= 0 */
+   return(n - nleft);
 }
 
 int main(int argc, char **argv){
