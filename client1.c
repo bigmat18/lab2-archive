@@ -73,17 +73,17 @@ int main(int argv, char** argc){
     ssize_t e;
 
     while(true){
-        ssize_t buf_lenght = getline(&buffer, &n, file);
-        if (buf_lenght < 0) break;
+        e = getline(&buffer, &n, file);
+        if (e < 0) break;
 
-        printf("%zd - %s", buf_lenght, buffer);
+        printf("%zd - %s", e, buffer);
 
-        tmp = htonl((int)(buf_lenght));
+        tmp = htonl((int)(strlen(buffer)));
         e = writen(fd_skt, &tmp, sizeof(tmp));
         if (e != sizeof(int)) terminate("Errore write");
 
-        e = writen(fd_skt, &buffer, buf_lenght);
-        if (e != buf_lenght) terminate("Errore write");
+        e = writen(fd_skt, &buffer, strlen(buffer));
+        if (e != strlen(buffer)) terminate("Errore write");
         break;
     }
 

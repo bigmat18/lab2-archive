@@ -50,7 +50,7 @@ void aggiungi(char *s){
 }
 
 int conta(char *s){
-
+  return 0;
 }
 
 ssize_t readn(int fd, void *ptr, size_t n) {  
@@ -74,18 +74,22 @@ int main(int argc, char **argv){
     int num_writers = atoi(argv[1]);
     int num_readers = atoi(argv[2]);
 
-    char buf[3];
     int hash_table = hcreate(NUM_ELEM);
     if(hash_table == 0) terminate("Error creation hash table");
-    printf("ciao");
     int fd = open("caposc", O_RDONLY);
     int bytesread = 0;
+    int n;
 
-    while (1) {
-      char temp;
-      if (read(fd, &temp, 1) < 1) break;
-      fprintf(stderr, "chaine : %c\n", temp);
-    }
+    size_t e = readn(fd, &n, sizeof(n));
+    if(e != sizeof(n)) terminate("Error in reading 1");
+    printf("%d\n", n);
+
+    char *buf = (char*)malloc(n * sizeof(char));
+
+    e = readn(fd, buf, n);
+    if (e != n) terminate("Error in reading 2");
+
+    printf("%s", buf);
 
     close(fd);
     return 0;

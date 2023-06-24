@@ -27,15 +27,19 @@ def recv_all(conn,n):
 def handler_connection(conn, addr):
     with conn:
         print(f"Contattato da {addr}")
-        pipe = os.open("caposc", os.O_WRONLY)
         data = recv_all(conn, 4)
         assert len(data) == 4
+        
         lenght = struct.unpack("!i", data)[0]
         assert lenght > 0
         
         data = recv_all(conn, lenght)
         assert len(data) == lenght
-        os.write(pipe, data.encode())
+        
+        print(struct.unpack(f"{lenght}c", data)[0])
+        
+        pipe = os.open("caposc", os.O_WRONLY)
+        os.write(pipe, struct.pack("i", lenght) + data)
         os.close("caposc")
             
 
