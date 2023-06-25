@@ -70,7 +70,7 @@ ssize_t readn(int fd, void *ptr, size_t n) {
 }
 
 int main(int argc, char **argv){
-    // assert(argc == 3);
+    assert(argc == 3);
     int num_writers = atoi(argv[1]);
     int num_readers = atoi(argv[2]);
 

@@ -34,9 +34,7 @@ def handler_connection(conn, addr):
         assert lenght > 0
         
         data = recv_all(conn, lenght)
-        assert len(data) == lenght
-        
-        print(struct.unpack(f"{lenght}c", data)[0])
+        assert len(data.decode()) == lenght
         
         pipe = os.open("caposc", os.O_WRONLY)
         os.write(pipe, struct.pack("i", lenght) + data)
