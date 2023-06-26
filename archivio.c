@@ -80,16 +80,24 @@ int main(int argc, char **argv){
     int bytesread = 0;
     int n;
 
-    size_t e = readn(fd, &n, sizeof(n));
-    if(e != sizeof(n)) terminate("Error in reading 1");
-    printf("%d\n", n);
+    char *buf;
 
-    char *buf = (char*)malloc(n * sizeof(char));
+    while(true){
+      size_t e = readn(fd, &n, sizeof(n));
+      if (e != sizeof(n))
+          terminate("Error in reading 1");
+      printf("%d - ", n);
 
-    e = readn(fd, buf, n);
-    if (e != n) terminate("Error in reading 2");
+      buf = malloc(n * sizeof(char));
 
-    printf("%s", buf);
+      e = readn(fd, buf, n); 
+      if (e != n)
+          terminate("Error in reading 2");
+
+      printf("%s\n", buf);
+    }
+
+    free(buf);
 
     close(fd);
     return 0;

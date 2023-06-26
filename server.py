@@ -24,21 +24,22 @@ def recv_all(conn,n):
     bytes_recd = bytes_recd + len(chunk)
   return chunks
 
-def handler_connection(conn, addr):
+def handler_connection(conn, addr, pipe):
     with conn:
         print(f"Contattato da {addr}")
-        data = recv_all(conn, 4)
-        assert len(data) == 4
         
-        lenght = struct.unpack("!i", data)[0]
-        assert lenght > 0
-        
-        data = recv_all(conn, lenght)
-        assert len(data.decode()) == lenght
-        
-        pipe = os.open("caposc", os.O_WRONLY)
-        os.write(pipe, struct.pack("i", lenght) + data)
-        os.close("caposc")
+        while True:
+            data = recv_all(conn, 4)
+            assert len(data) == 4
+            
+            lenght = struct.unpack("!i", data)[0]
+            if lenght == -1: break;
+            assert lenght > 0
+            
+            data = recv_all(conn, lenght)
+            assert len(data.decode()) == lenght
+            print(data)
+            os.write(pipe, struct.pack("i", lenght) + data)
             
 
 if __name__ == "__main__":
@@ -69,13 +70,15 @@ if __name__ == "__main__":
             server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)      
             server.bind((HOST, PORT))
             server.listen()
+            pipe = os.open("caposc", os.O_WRONLY)
             with concurrent.futures.ThreadPoolExecutor(max_workers=args.number_thread) as executor:
                 while True:
                     print("In attesa di un client...")
                     conn, addr = server.accept()
-                    executor.submit(handler_connection, conn, addr)
+                    executor.submit(handler_connection, conn, addr, pipe)
         except KeyboardInterrupt: 
             pass
         server.shutdown(socket.SHUT_RDWR)
+        os.close("caposc")
 
 

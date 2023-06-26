@@ -5,9 +5,10 @@
             "name": "Debug",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/client1",
+            "program": "${workspaceFolder}/archivio",
             "args": [
-                "test.txt"
+                "5",
+                "5"
             ],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",

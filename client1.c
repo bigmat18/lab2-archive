@@ -86,13 +86,14 @@ int main(int argv, char** argc){
           e = writen(fd_skt, &buffer[i], 1);
           if (e != 1) terminate("Errore write");
         }
-
-        break;
-
         // e = writen(fd_skt, &buffer, strlen(buffer));
         // if (e != strlen(buffer)) terminate("Errore write");
         // break;
     }
+
+    tmp = -1;
+    e = writen(fd_skt, &tmp, sizeof(tmp));
+    if (e != sizeof(int)) terminate("Errore write");
 
     if (close(fd_skt) < 0) perror("Errore chiusura socket");
     fclose(file);
