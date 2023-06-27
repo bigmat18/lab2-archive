@@ -1,73 +1,25 @@
-#define _GNU_SOURCE
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdbool.h>
-#include <assert.h>
-#include <string.h>
-#include <errno.h>
-#include <search.h>
-#include <signal.h>
-#include <fcntl.h>
-#include <unistd.h>
+#include "utils.h"
 
 #define NUM_ELEM 1000000
 #define PC_BUFFER_LEN 10
+
+void aggiungi(char *s);
+int conta(char *s);
+ENTRY *create_entry(char *s, int n);
+void remove_entry(ENTRY *e);
 
 typedef struct {
     int data;
     ENTRY *next;
 } Data;
 
-void terminate(const char *message){
-  if(errno!=0) perror(message);
-	else fprintf(stderr,"%s\n", message);
-  exit(1);
-}
-
-ENTRY *create_entry(char *s, int n) {
-  ENTRY *e = malloc(sizeof(ENTRY));
-
-  if(e==NULL) terminate("error malloc entry 1");
-  e->key = strdup(s);
-  e->data = (Data*)malloc(sizeof(Data));
-
-  if(e->key==NULL || e->data==NULL)
-    terminate("error malloc entry 2");
-
-  ((Data*)e->data)->data = n;
-  ((Data*)e->data)->next = NULL;
-  return e;
-}
-
-void remove_entry(ENTRY *e) {
-  free(e->key); 
-  free(e->data); 
-  free(e);
-}
-
-void aggiungi(char *s){
-
-}
-
-int conta(char *s){
-  return 0;
-}
-
-ssize_t readn(int fd, void *ptr, size_t n) {  
-   size_t   nleft;
-   ssize_t  nread;
- 
-   nleft = n;
-   while (nleft > 0) {
-     if((nread = read(fd, ptr, nleft)) < 0) {
-        if (nleft == n) return -1;
-        else break;
-     } else if (nread == 0) break;
-     nleft -= nread;
-     ptr   += nread;
-   }
-   return(n - nleft);
-}
+typedef struct {
+    pthread_cond_t *empty;
+    pthread_cond_t *full;
+    pthread_mutex_t *mutex_buf;
+    char *buf;
+    int *fd;
+} DataChiefConsumer;
 
 int main(int argc, char **argv){
     assert(argc == 3);
@@ -75,9 +27,8 @@ int main(int argc, char **argv){
     int num_readers = atoi(argv[2]);
 
     int hash_table = hcreate(NUM_ELEM);
-    if(hash_table == 0) terminate("Error creation hash table");
+    if(hash_table == 0) termina("Error creation hash table");
     int fd = open("caposc", O_RDONLY);
-    int bytesread = 0;
     int n;
 
     char *buf;
@@ -85,14 +36,14 @@ int main(int argc, char **argv){
     while(true){
       size_t e = readn(fd, &n, sizeof(n));
       if (e != sizeof(n))
-          terminate("Error in reading 1");
+          termina("Error in reading 1");
       printf("%d - ", n);
 
       buf = malloc(n * sizeof(char));
 
       e = readn(fd, buf, n); 
       if (e != n)
-          terminate("Error in reading 2");
+          termina("Error in reading 2");
 
       printf("%s\n", buf);
     }
@@ -102,3 +53,25 @@ int main(int argc, char **argv){
     close(fd);
     return 0;
 }
+
+ENTRY *create_entry(char *s, int n) {
+  ENTRY *e = malloc(sizeof(ENTRY));
+
+  if(e==NULL) termina("error malloc entry 1");
+  e->key = strdup(s);
+  e->data = (Data*)malloc(sizeof(Data));
+
+  if(e->key==NULL || e->data==NULL)
+    termina("error malloc entry 2");
+
+  ((Data*)e->data)->data = n;
+  ((Data*)e->data)->next = NULL;
+  return e;
+}
+
+void remove_entry(ENTRY *e) { 
+  free(e->key); 
+  free(e->data); 
+  free(e); 
+}
+

@@ -1,8 +1,7 @@
-# definizione del compilatore e dei flag di compilazione
-# che vengono usate dalle regole implicite
-CC=gcc
-CFLAGS=-std=c11 -Wall -O -g
-LDLIBS=-lm
+SRC_DIR = src
+CC = gcc
+OBJ_NAME = archivio
+COMPILER_FLAGS = -std=c11 -Wall -O0 -g
 
-# se si scrive solo make di default compila main.c
-all: archivio client1
+archivio:
+	$(CC) $(COMPILER_FLAGS) archivio.c utils.c -o archivio
