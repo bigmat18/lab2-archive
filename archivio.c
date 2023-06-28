@@ -4,15 +4,12 @@
 #define NUM_ELEM 1000000
 #define PC_BUFFER_LEN 10
 
+int HASH_TABLE;
+
 void aggiungi(char *s);
 int conta(char *s);
 ENTRY *create_entry(char *s, int n);
 void remove_entry(ENTRY *e);
-
-typedef struct{
-  int data;
-  ENTRY *next;
-} Data;
 
 typedef struct{
   pthread_cond_t *empty;
@@ -22,10 +19,19 @@ typedef struct{
   int *pindex;
   int *index;
   int fd;
-} DataChiefConsumer;
+} DataProdWriter;
 
-void tbody_chief_consumer(void *args){
-  DataChiefConsumer *data = (DataChiefConsumer*)args;
+typedef struct {
+  pthread_cond_t *empty;
+  pthread_cond_t *full;
+  pthread_mutex_t *mutex;
+  char **buf;
+  int *cindex;
+  int *index;
+} DataConsWriter;
+
+void tbody_prod_writer(void *args){
+  DataProdWriter *data = (DataProdWriter*)args;
   int n;
   char *temp_buf;
   do {
@@ -48,8 +54,7 @@ void tbody_chief_consumer(void *args){
         while(*(data->index) == PC_BUFFER_LEN){
           xpthread_cond_wait(data->full, data->mutex, QUI);
         }
-        data->buf[*(data->pindex) % PC_BUFFER_LEN] = token;
-        printf("%s\n", data->buf[*(data->pindex) % PC_BUFFER_LEN]);
+        data->buf[*(data->pindex) % PC_BUFFER_LEN] = strdup(token);
         *(data->index) += 1;
         *(data->pindex) += 1;
         token = strtok(NULL, ".,:; \n\r\t");
@@ -61,13 +66,20 @@ void tbody_chief_consumer(void *args){
   free(temp_buf);
 }
 
+void tbody_cons_writer(void* args){
+  DataConsWriter *data = (DataConsWriter*)args;
+  do {
+    
+  }while(true);
+}
+
 int main(int argc, char **argv){
   assert(argc == 3);
   int num_writers = atoi(argv[1]);
   int num_readers = atoi(argv[2]);
 
-  int hash_table = hcreate(NUM_ELEM);
-  if (hash_table == 0)
+  HASH_TABLE = hcreate(NUM_ELEM);
+  if (HASH_TABLE == 0)
     termina("Error creation hash table");
   int fd = open("caposc", O_RDONLY);
 
@@ -77,8 +89,8 @@ int main(int argc, char **argv){
   pthread_cond_t empty = PTHREAD_COND_INITIALIZER;
   pthread_cond_t full = PTHREAD_COND_INITIALIZER;
 
-  pthread_t chief_consumer;
-  DataChiefConsumer data;
+  pthread_t prod_writer;
+  DataProdWriter data;
 
   data.buf = &buffer[0];
   data.empty = &empty;
@@ -88,25 +100,26 @@ int main(int argc, char **argv){
   data.pindex = &pindex;
   data.index = &index;
 
-  xpthread_create(&chief_consumer, NULL, &tbody_chief_consumer, &data, QUI);
-  xpthread_join(chief_consumer, NULL, QUI);
+  xpthread_create(&prod_writer, NULL, &tbody_prod_writer, &data, QUI);
+  xpthread_join(prod_writer, NULL, QUI);
+
+  for(int i=0; i<PC_BUFFER_LEN; i++) printf("%s\n", buffer[i]);
+
   close(fd);
+  hdestroy();
   return 0;
 }
 
-ENTRY *create_entry(char *s, int n){
+ENTRY *crea_entry(char *s, int n) {
   ENTRY *e = malloc(sizeof(ENTRY));
+  if(e==NULL) termina("errore malloc entry 1");
 
-  if (e == NULL)
-    termina("error malloc entry 1");
   e->key = strdup(s);
-  e->data = (Data *)malloc(sizeof(Data));
+  e->data = (int *) malloc(sizeof(int));
 
-  if (e->key == NULL || e->data == NULL)
-    termina("error malloc entry 2");
-
-  ((Data *)e->data)->data = n;
-  ((Data *)e->data)->next = NULL;
+  if(e->key==NULL || e->data==NULL)
+    termina("errore malloc entry 2");
+  *((int *)e->data) = n;
   return e;
 }
 
@@ -114,4 +127,13 @@ void remove_entry(ENTRY *e){
   free(e->key);
   free(e->data);
   free(e);
+}
+
+void aggiungi(char *s){
+  ENTRY *value = hsearch((ENTRY){s, (int)(1)}, FIND);
+  if (value  != NULL){
+    (int)(value->data)++;
+  } else {
+    hsearch((ENTRY){s, (int)(1)}, ENTER);
+  }
 }
