@@ -69,7 +69,16 @@ void tbody_prod_writer(void *args){
 void tbody_cons_writer(void* args){
   DataConsWriter *data = (DataConsWriter*)args;
   do {
-    
+    xpthread_mutex_lock(data->mutex, QUI);
+    while (*(data->index) == 0) {
+      xpthread_cond_wait(data->empty, data->mutex, QUI);
+    }
+    aggiungi(data->buf[*(data->cindex) % PC_BUFFER_LEN]);
+    *(data->cindex) += 1;
+    *(data->index) -= 1;
+
+    xpthread_cond_signal(data->full, QUI);
+    xpthread_mutex_unlock(data->mutex, QUI);
   }while(true);
 }
 
