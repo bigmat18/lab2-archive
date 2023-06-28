@@ -30,7 +30,7 @@ typedef struct {
   int *index;
 } DataConsWriter;
 
-void tbody_prod_writer(void *args){
+void* tbody_prod_writer(void *args){
   DataProdWriter *data = (DataProdWriter*)args;
   int n;
   char *temp_buf;
@@ -45,7 +45,7 @@ void tbody_prod_writer(void *args){
     if (e != n)
       termina("Error in reading 2");
 
-    strncat(temp_buf, "0", 1);
+    // strncat(temp_buf, "0", 1);
 
     char *token = strtok(temp_buf, ".,:; \n\r\t");
 
@@ -66,7 +66,7 @@ void tbody_prod_writer(void *args){
   free(temp_buf);
 }
 
-void tbody_cons_writer(void* args){
+void* tbody_cons_writer(void* args){
   DataConsWriter *data = (DataConsWriter*)args;
   do {
     xpthread_mutex_lock(data->mutex, QUI);
@@ -99,20 +99,37 @@ int main(int argc, char **argv){
   pthread_cond_t full = PTHREAD_COND_INITIALIZER;
 
   pthread_t prod_writer;
-  DataProdWriter data;
+  DataProdWriter data_prod_writer;
 
-  data.buf = &buffer[0];
-  data.empty = &empty;
-  data.full = &full;
-  data.fd = fd;
-  data.mutex = &mutex;
-  data.pindex = &pindex;
-  data.index = &index;
+  data_prod_writer.buf = &buffer[0];
+  data_prod_writer.empty = &empty;
+  data_prod_writer.full = &full;
+  data_prod_writer.fd = fd;
+  data_prod_writer.mutex = &mutex;
+  data_prod_writer.pindex = &pindex;
+  data_prod_writer.index = &index;
 
-  xpthread_create(&prod_writer, NULL, &tbody_prod_writer, &data, QUI);
+  pthread_t cons_writer[num_writers];
+  DataConsWriter data_cons_writer[num_writers];
+
+  xpthread_create(&prod_writer, NULL, &tbody_prod_writer, &data_prod_writer, QUI);
+
+  for(int i=0; i<num_writers; i++){
+    data_cons_writer[i].buf = &buffer[0];
+    data_cons_writer[i].empty = &empty;
+    data_cons_writer[i].full = &full;
+    data_cons_writer[i].cindex = &cindex;
+    data_cons_writer[i].index = &index;
+    data_cons_writer[i].mutex = &mutex;
+
+    xpthread_create(&cons_writer[i], NULL, &tbody_cons_writer, &data_cons_writer[i], QUI);
+  }
+
   xpthread_join(prod_writer, NULL, QUI);
 
-  for(int i=0; i<PC_BUFFER_LEN; i++) printf("%s\n", buffer[i]);
+  for(int i=0; i<num_writers; i++){
+    xpthread_join(cons_writer[i], NULL, QUI);
+  }
 
   close(fd);
   hdestroy();
@@ -139,10 +156,17 @@ void remove_entry(ENTRY *e){
 }
 
 void aggiungi(char *s){
-  ENTRY *value = hsearch((ENTRY){s, (int)(1)}, FIND);
-  if (value  != NULL){
-    (int)(value->data)++;
+  // printf("strart adding - ");
+  ENTRY *entryp, *entry;
+  entry = crea_entry(s, 1);
+  entryp = hsearch(*entry, FIND);
+
+  if(entryp == NULL){
+    hsearch(*entry, ENTER);
+    // printf("%d %s\n", *((int *)(entry->data)), entry->key);
   } else {
-    hsearch((ENTRY){s, (int)(1)}, ENTER);
+    *((int*)(entryp->data)) += 1;
+    free(entry);
+    // printf("%d %s\n", *((int *)(entryp->data)), entryp->key);
   }
 }
