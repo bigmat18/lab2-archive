@@ -72,6 +72,10 @@ int main(int argv, char** argc){
     size_t n = 0;
     ssize_t e;
 
+    char type = 'a';
+    e = writen(fd_skt, &type, sizeof(type));
+    if (e != sizeof(char)) terminate("Errore write");
+
     while(true){
         e = getline(&buffer, &n, file);
         if (e < 0) break;
@@ -86,9 +90,6 @@ int main(int argv, char** argc){
           e = writen(fd_skt, &buffer[i], 1);
           if (e != 1) terminate("Errore write");
         }
-        // e = writen(fd_skt, &buffer, strlen(buffer));
-        // if (e != strlen(buffer)) terminate("Errore write");
-        // break;
     }
 
     tmp = -1;
