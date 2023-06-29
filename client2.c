@@ -18,6 +18,8 @@ void *tbody(void *args){
   int fd_skt = 0, tmp;
   struct sockaddr_in serv_addr;
 
+  printf("fai schifo1\n");
+
   if ((fd_skt = socket(AF_INET, SOCK_STREAM, 0)) < 0)
     termina("Errore creazione socket");
 
@@ -31,10 +33,14 @@ void *tbody(void *args){
   size_t n = 0;
   ssize_t e;
 
+  printf("fai schifo2\n");
+
   char type = 'b';
   e = writen(fd_skt, &type, sizeof(type));
   if (e != sizeof(char))
-    termina("Errore write");
+    termina("Errore write 1");
+
+  printf("fai schifo3\n");
 
   while (true){
     e = getline(&buffer, &n, data->file);
@@ -46,12 +52,12 @@ void *tbody(void *args){
     tmp = htonl((int)(strlen(buffer)));
     e = writen(fd_skt, &tmp, sizeof(tmp));
     if (e != sizeof(int))
-      termina("Errore write");
+      termina("Errore write 2");
 
     for (unsigned int i = 0; i < strlen(buffer); ++i){
       e = writen(fd_skt, &buffer[i], 1);
       if (e != 1)
-        termina("Errore write");
+        termina("Errore write 3");
     }
   }
 
@@ -62,6 +68,8 @@ void *tbody(void *args){
 
   if (close(fd_skt) < 0)
     perror("Errore chiusura socket");
+  
+  fclose(data->file);
 }
 
 int main(int argv, char **argc){
@@ -71,11 +79,13 @@ int main(int argv, char **argc){
   Data data[argv-1];
 
   for (int i = 1; i < argv; ++i){
-    data[i].file = fopen(argc[i], "r");
+    printf("%s\n", argc[i]);
+    FILE *file = fopen(argc[i], "r");
+    data[i-1].file = file;
     xpthread_create(&threads[i-1], NULL, &tbody, &data[i-1], QUI);
   }
 
-  for (int i = 0; i < argv; ++i){
+  for (int i = 0; i < argv-1; ++i){
     xpthread_join(threads[i], NULL, QUI);
   }
 
