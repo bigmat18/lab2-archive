@@ -65,15 +65,14 @@ void *tbody(void *args){
 }
 
 int main(int argv, char **argc){
-  if (argv >= 2)
-    termina("Inviare file");
+  if (argv < 2) termina("Inviare file");
 
   pthread_t threads[argv-1];
   Data data[argv-1];
 
   for (int i = 1; i < argv; ++i){
     data[i].file = fopen(argc[i], "r");
-    xpthread_create(threads[i-1], &tbody, &data[i-1], NULL, QUI);
+    xpthread_create(&threads[i-1], NULL, &tbody, &data[i-1], QUI);
   }
 
   for (int i = 0; i < argv; ++i){

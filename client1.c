@@ -55,13 +55,24 @@ int main(int argv, char** argc){
     if(argv != 2) terminate("Inviare file");
 
     FILE *file = fopen(argc[1], "r");
-    char *buffer = NULL;
+    char *buffer;
+
+    if(file){
+     fseek(file, 0, SEEK_END);
+     int length = ftell(file);
+     fseek(file, 0, SEEK_SET);
+     buffer = malloc(length);
+
+     if (buffer) fread(buffer, 1, length, file);
+    } else terminate("Errore apertura file");
+
+    printf("%s", buffer);
 
     int fd_skt = 0, tmp;
     struct sockaddr_in serv_addr;
 
     if ((fd_skt = socket(AF_INET, SOCK_STREAM, 0)) < 0)
-        terminate("Errore creazione socket");
+      terminate("Errore creazione socket");
 
     serv_addr.sin_family = AF_INET;
     serv_addr.sin_port = htons(PORT);
@@ -76,25 +87,16 @@ int main(int argv, char** argc){
     e = writen(fd_skt, &type, sizeof(type));
     if (e != sizeof(char)) terminate("Errore write");
 
-    while(true){
-        e = getline(&buffer, &n, file);
-        if (e < 0) break;
-
-        printf("%zd - %s", e, buffer);
-
-        tmp = htonl((int)(strlen(buffer)));
-        e = writen(fd_skt, &tmp, sizeof(tmp));
-        if (e != sizeof(int)) terminate("Errore write");
-
-        for(unsigned int i = 0; i < strlen(buffer); ++i){
-          e = writen(fd_skt, &buffer[i], 1);
-          if (e != 1) terminate("Errore write");
-        }
-    }
-
-    tmp = -1;
+    tmp = htonl((int)(strlen(buffer)));
     e = writen(fd_skt, &tmp, sizeof(tmp));
-    if (e != sizeof(int)) terminate("Errore write");
+    if (e != sizeof(int))
+      terminate("Errore write");
+
+    for (unsigned int i = 0; i < strlen(buffer); ++i){
+      e = writen(fd_skt, &buffer[i], 1);
+      if (e != 1)
+        terminate("Errore write");
+    }
 
     if (close(fd_skt) < 0) perror("Errore chiusura socket");
     fclose(file);

@@ -91,6 +91,7 @@ int main(int argc, char **argv){
   if (HASH_TABLE == 0)
     termina("Error creation hash table");
   int fd = open("caposc", O_RDONLY);
+  int fd2 = open("capolet", O_RDONLY);
 
   char *buffer[PC_BUFFER_LEN];
   int pindex = 0, cindex = 0, index = 0;
@@ -132,6 +133,7 @@ int main(int argc, char **argv){
   }
 
   close(fd);
+  close(fd2);
   hdestroy();
   return 0;
 }
@@ -156,17 +158,17 @@ void remove_entry(ENTRY *e){
 }
 
 void aggiungi(char *s){
-  // printf("strart adding - ");
+  printf("strart adding - ");
   ENTRY *entryp, *entry;
   entry = crea_entry(s, 1);
   entryp = hsearch(*entry, FIND);
 
   if(entryp == NULL){
     hsearch(*entry, ENTER);
-    // printf("%d %s\n", *((int *)(entry->data)), entry->key);
+    printf("%d %s\n", *((int *)(entry->data)), entry->key);
   } else {
     *((int*)(entryp->data)) += 1;
     free(entry);
-    // printf("%d %s\n", *((int *)(entryp->data)), entryp->key);
+    printf("%d %s\n", *((int *)(entryp->data)), entryp->key);
   }
 }

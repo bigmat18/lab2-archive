@@ -29,6 +29,17 @@ def handler_connection_A(conn, addr, pipe):
     with conn:
         print(f"Contattato A da {addr}")
         
+        data = recv_all(conn, 4)
+        assert len(data) == 4
+        
+        lenght = struct.unpack("!i", data)[0]
+        assert lenght > 0
+            
+        data = recv_all(conn, lenght)
+        assert len(data.decode()) == lenght
+        print(data.decode())
+        os.write(pipe, struct.pack("i", lenght) + data)
+        
 def handler_connection_B(conn, addr, pipe):
     with conn:
         print(f"Contattato B da {addr}")
