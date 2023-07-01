@@ -18,8 +18,6 @@ void *tbody(void *args){
   int fd_skt = 0, tmp;
   struct sockaddr_in serv_addr;
 
-  printf("fai schifo1\n");
-
   if ((fd_skt = socket(AF_INET, SOCK_STREAM, 0)) < 0)
     termina("Errore creazione socket");
 
@@ -33,14 +31,10 @@ void *tbody(void *args){
   size_t n = 0;
   ssize_t e;
 
-  printf("fai schifo2\n");
-
   char type = 'b';
   e = writen(fd_skt, &type, sizeof(type));
   if (e != sizeof(char))
     termina("Errore write 1");
-
-  printf("fai schifo3\n");
 
   while (true){
     e = getline(&buffer, &n, data->file);

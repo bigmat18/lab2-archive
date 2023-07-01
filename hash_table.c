@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "hash_table.h"
 
 hash_table_t *hash_table_create() {
@@ -40,22 +41,21 @@ int hash_table_insert(hash_table_t *hash_table, const char *key) {
         return 1;
     }
 
-    entry->key = key;
+    entry->key = strdup(key);
     entry->data = (int*)malloc(sizeof(int));
 
     if (entry->data == NULL) {
         perror("Errore allocazione int");
         return 1;
     }
-
-    entry->data = NULL;
+    *((int*)(entry->data)) = 0;
 
     entry_ptr = hsearch(*entry, ENTER);
 
     if (entry_ptr == NULL) {
-        perror("Errore ricerca in hash_table");
+        perror("Errore ricerca in hash table");
         return 1;
-    } else if (entry_ptr->data == NULL){
+    } else if (*((int*)entry_ptr->data) == 0){
         *((int*)(entry_ptr->data)) = 1;
         hash_table->entrys[hash_table->index_entrys] = entry_ptr;
 
@@ -65,6 +65,8 @@ int hash_table_insert(hash_table_t *hash_table, const char *key) {
             hash_table->entrys = realloc(hash_table->entrys, sizeof(ENTRY*) * hash_table->size_entrys);
         }
     } else *((int*)(entry_ptr->data)) += 1;
+
+    fprintf(stderr, "Insert entry: %s --> %d\n", entry_ptr->key, *((int*)entry_ptr->data));
 
     return 0;
 }
@@ -76,4 +78,5 @@ void hash_table_destroy(hash_table_t *hash_table) {
     }
     hdestroy();
     free(hash_table);
+    free(hash_table->entrys);
 }

@@ -18,6 +18,7 @@
         "tuple": "c",
         "type_traits": "c",
         "vector": "c",
-        "hash_table.h": "c"
+        "hash_table.h": "c",
+        "array": "c"
     }
 }

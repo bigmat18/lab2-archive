@@ -55,9 +55,9 @@ int main(int argv, char** argc){
     if(argv != 2) terminate("Inviare file");
 
     FILE *file = fopen(argc[1], "r");
-    char *buffer;
+    char *buffer = NULL;
 
-    if(file){
+    if(file != NULL){
      fseek(file, 0, SEEK_END);
      int length = ftell(file);
      fseek(file, 0, SEEK_SET);

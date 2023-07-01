@@ -1,15 +1,10 @@
 #include "utils.h"
+#include "hash_table.h"
 
 #define QUI __LINE__, __FILE__
-#define NUM_ELEM 1000000
 #define PC_BUFFER_LEN 10
 
-int HASH_TABLE;
-
-void aggiungi(char *s);
-int conta(char *s);
-ENTRY *create_entry(char *s, int n);
-void remove_entry(ENTRY *e);
+hash_table_t *HASH_TABLE;
 
 typedef struct{
   pthread_cond_t *empty;
@@ -54,7 +49,7 @@ void* tbody_prod_writer(void *args){
         while(*(data->index) == PC_BUFFER_LEN){
           xpthread_cond_wait(data->full, data->mutex, QUI);
         }
-        data->buf[*(data->pindex) % PC_BUFFER_LEN] = strdup(token);
+        data->buf[*(data->pindex) % PC_BUFFER_LEN] = token;
         *(data->index) += 1;
         *(data->pindex) += 1;
         token = strtok(NULL, ".,:; \n\r\t");
@@ -73,7 +68,7 @@ void* tbody_cons_writer(void* args){
     while (*(data->index) == 0) {
       xpthread_cond_wait(data->empty, data->mutex, QUI);
     }
-    aggiungi(data->buf[*(data->cindex) % PC_BUFFER_LEN]);
+    hash_table_insert(HASH_TABLE, data->buf[*(data->cindex) % PC_BUFFER_LEN]);
     *(data->cindex) += 1;
     *(data->index) -= 1;
 
@@ -87,9 +82,8 @@ int main(int argc, char **argv){
   int num_writers = atoi(argv[1]);
   int num_readers = atoi(argv[2]);
 
-  HASH_TABLE = hcreate(NUM_ELEM);
-  if (HASH_TABLE == 0)
-    termina("Error creation hash table");
+  HASH_TABLE = hash_table_create();
+
   int fd = open("caposc", O_RDONLY);
   int fd2 = open("capolet", O_RDONLY);
 
@@ -134,41 +128,7 @@ int main(int argc, char **argv){
 
   close(fd);
   close(fd2);
-  hdestroy();
+  
+  hash_table_destroy(HASH_TABLE);
   return 0;
-}
-
-ENTRY *crea_entry(char *s, int n) {
-  ENTRY *e = malloc(sizeof(ENTRY));
-  if(e==NULL) termina("errore malloc entry 1");
-
-  e->key = strdup(s);
-  e->data = (int *) malloc(sizeof(int));
-
-  if(e->key==NULL || e->data==NULL)
-    termina("errore malloc entry 2");
-  *((int *)e->data) = n;
-  return e;
-}
-
-void remove_entry(ENTRY *e){
-  free(e->key);
-  free(e->data);
-  free(e);
-}
-
-void aggiungi(char *s){
-  printf("start adding - ");
-  ENTRY *entryp, *entry;
-  entry = crea_entry(s, 1);
-  entryp = hsearch(*entry, FIND);
-
-  if(entryp == NULL){
-    hsearch(*entry, ENTER);
-    printf("%d %s\n", *((int *)(entry->data)), entry->key);
-  } else {
-    *((int*)(entryp->data)) += 1;
-    free(entry);
-    printf("%d %s\n", *((int *)(entryp->data)), entryp->key);
-  }
 }
