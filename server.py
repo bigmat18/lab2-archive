@@ -101,5 +101,6 @@ if __name__ == "__main__":
             pass
         server.shutdown(socket.SHUT_RDWR)
         os.close("caposc")
+        os.close("capolet")
 
 

@@ -17,6 +17,7 @@
         "system_error": "c",
         "tuple": "c",
         "type_traits": "c",
-        "vector": "c"
+        "vector": "c",
+        "hash_table.h": "c"
     }
 }

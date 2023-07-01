@@ -158,7 +158,7 @@ void remove_entry(ENTRY *e){
 }
 
 void aggiungi(char *s){
-  printf("strart adding - ");
+  printf("start adding - ");
   ENTRY *entryp, *entry;
   entry = crea_entry(s, 1);
   entryp = hsearch(*entry, FIND);
