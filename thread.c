@@ -3,7 +3,7 @@
 
 thread_t *thread_create(void *data, void *(*tbody)(void *)) {
     thread_t *thread = (thread_t *)malloc(sizeof(thread_t));
-    check((thread == NULL), "Errore allocazione thread", exit(1));
+    check(thread == NULL, "Errore allocazione thread", exit(1));
 
     thread->data = data;
     thread->tbody = tbody;

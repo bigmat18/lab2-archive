@@ -16,9 +16,7 @@ void* tbody_prod_writer(void *args){
     temp_buf = (char*)malloc(n * sizeof(char));
 
     e = readn(data->caposc, temp_buf, n);
-    check((e != n), "Errore in reading 1", exit(1));
-
-    // strncat(temp_buf, "0", 1);
+    check(e != n, "Errore in reading 1", exit(1));
 
     char *token = strtok(temp_buf, TOKENIZATOR);
 
@@ -33,17 +31,15 @@ void* tbody_prod_writer(void *args){
 
 void* tbody_cons_writer(void* args){
   data_writer_t *data = (data_writer_t *)args;
-  char *str;
   do {
-    str = buffer_remove(data->buffer);
-    hash_table_insert(data->hash_table, str);
+    buffer_consume(data->buffer, data->hash_table);
   } while (true);
 }
 
 int main(int argc, char **argv){
   assert(argc == 3);
   int num_writers = atoi(argv[1]);
-  int num_readers = atoi(argv[2]);
+  // int num_readers = atoi(argv[2]);
 
   hash_table_t *hash_table = hash_table_create();
 
@@ -51,6 +47,7 @@ int main(int argc, char **argv){
   int capolet = open("capolet", O_RDONLY);
 
   buffer_t *buffer = buffer_create();
+
   data_writer_t *data_writer = (data_writer_t*)malloc(sizeof(data_writer_t));
   data_writer->buffer = buffer;
   data_writer->caposc = caposc;

@@ -1,11 +1,12 @@
 #include <pthread.h>
 #include <stdio.h>
+#include "hash_table.h"
 
-#ifndef check(val, str, result)
-    #define check(val, str, result)     \
-        if (val) printf(str);           \
-        else result;
-#endif check(val, str, result)
+#define check(val, str, result)                                                          \
+    if (val) {                                                                           \
+        fprintf(stderr, "== %s == Linea: %d, File: %s\n", str, __LINE__, __FILE__);      \
+        result;                                                                          \
+    }
 
 #define PC_BUFFER_LEN 10
 
@@ -27,10 +28,8 @@ buffer_t *buffer_create();
 
 int buffer_insert(buffer_t *buffer, char *str);
 
-char* buffer_remove(buffer_t *buffer);
+void buffer_consume(buffer_t *buffer, hash_table_t *hash_table);
 
 void buffer_destroy(buffer_t *buffer);
 
 #endif
-
-

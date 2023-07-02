@@ -24,6 +24,7 @@
         "stdbool.h": "c",
         "stdio.h": "c",
         "sstream": "c",
-        "__locale": "c"
+        "__locale": "c",
+        "thread.h": "c"
     }
 }

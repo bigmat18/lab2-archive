@@ -25,10 +25,10 @@ buffer_t *buffer_create() {
     return buffer_strc;
 
     full_cleanup:
-        check(pthread_cond_destroy(&buffer_strc->empty), "Errore destroy", exit(1));
+        check(pthread_cond_destroy(&buffer_strc->empty) != 0, "Errore destroy", exit(1));
 
     empty_cleanup:
-        check(pthread_mutex_destroy(&buffer_strc->mutex), "Errore destroy", exit(1));
+        check(pthread_mutex_destroy(&buffer_strc->mutex) != 0, "Errore destroy", exit(1));
 
     mutex_cleanup:
         free(buffer_strc->buffer);
@@ -39,35 +39,34 @@ buffer_t *buffer_create() {
 }
 
 int buffer_insert(buffer_t *buffer, char *str) {
-    check(!pthread_mutex_lock(&buffer->mutex), "Errore lock", pthread_exit(NULL));
+    check(pthread_mutex_lock(&buffer->mutex) != 0, "Errore lock insert buffer", pthread_exit(NULL));
 
     while (buffer->index == PC_BUFFER_LEN)
-        check(!pthread_cond_wait(&buffer->full, &buffer->mutex), "Errore wait", pthread_exit(NULL));
+        check(pthread_cond_wait(&buffer->full, &buffer->mutex) != 0, "Errore wait insert buffer", pthread_exit(NULL));
 
     buffer->buffer[buffer->pindex % PC_BUFFER_LEN] = str;
     buffer->index += 1;
     buffer->pindex += 1;
 
-    check(!pthread_cond_signal(&buffer->empty), "Errore signal", pthread_exit(NULL));
-    check(!pthread_mutex_unlock(&buffer->mutex), "Errore unlock", pthread_exit(NULL));
+    check(pthread_cond_signal(&buffer->empty) != 0, "Errore signal insert buffer", pthread_exit(NULL));
+    check(pthread_mutex_unlock(&buffer->mutex) != 0, "Errore unlock insert buffer", pthread_exit(NULL));
 }
 
-char *buffer_remove(buffer_t *buffer) {
-    char *result = NULL;
+void buffer_consume(buffer_t *buffer, hash_table_t *hash_table) {
 
-    check(!pthread_mutex_lock(&buffer->mutex), "Errore lock", pthread_exit(NULL));
+    check(pthread_mutex_lock(&buffer->mutex) != 0, "Errore lock remove buffer", pthread_exit(NULL));
 
     while (buffer->index == 0)
-        check(!pthread_cond_wait(&buffer->full, &buffer->mutex), "Errore wait", pthread_exit(NULL));
+        check(pthread_cond_wait(&buffer->empty, &buffer->mutex) != 0, "Errore wait remove buffer", pthread_exit(NULL));
 
-    result = buffer->buffer[buffer->cindex % PC_BUFFER_LEN];
+    hash_table_insert(hash_table, buffer->buffer[buffer->cindex % PC_BUFFER_LEN]);
+
     buffer->cindex += 1;
     buffer->index -= 1;
 
-    check(!pthread_cond_signal(&buffer->full), "Errore signal", pthread_exit(NULL));
-    check(!pthread_mutex_unlock(&buffer->mutex), "Errore unlock", pthread_exit(NULL));
+    check(pthread_cond_signal(&buffer->full) != 0, "Errore signal remove buffer", pthread_exit(NULL));
+    check(pthread_mutex_unlock(&buffer->mutex) != 0, "Errore unlock remove buffer", pthread_exit(NULL));
 
-    return result;
 }
 
 void buffer_destroy(buffer_t *buffer) {
@@ -75,9 +74,9 @@ void buffer_destroy(buffer_t *buffer) {
         free(buffer->buffer[i]);
 
     free(buffer->buffer);
-    check(!pthread_mutex_destroy(&buffer->mutex), "Errore destroy", exit(1));
-    check(!pthread_cond_destroy(&buffer->empty), "Errore destroy", exit(1));
-    check(!pthread_cond_destroy(&buffer->full), "Errore destroy", exit(1));
+    check(pthread_mutex_destroy(&buffer->mutex) != 0, "Errore destroy", exit(1));
+    check(pthread_cond_destroy(&buffer->empty) != 0, "Errore destroy", exit(1));
+    check(pthread_cond_destroy(&buffer->full) != 0, "Errore destroy", exit(1));
 
     free(buffer);
 }
