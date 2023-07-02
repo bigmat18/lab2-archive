@@ -28,7 +28,7 @@ buffer_t *buffer_create();
 
 int buffer_insert(buffer_t *buffer, char *str);
 
-void buffer_consume(buffer_t *buffer, hash_table_t *hash_table);
+char *buffer_remove(buffer_t *buffer);
 
 void buffer_destroy(buffer_t *buffer);
 

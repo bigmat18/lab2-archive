@@ -32,7 +32,7 @@ void* tbody_prod_writer(void *args){
 void* tbody_cons_writer(void* args){
   data_writer_t *data = (data_writer_t *)args;
   do {
-    buffer_consume(data->buffer, data->hash_table);
+    hash_table_insert(data->hash_table, buffer_remove(data->buffer));
   } while (true);
 }
 

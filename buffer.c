@@ -52,14 +52,15 @@ int buffer_insert(buffer_t *buffer, char *str) {
     check(pthread_mutex_unlock(&buffer->mutex) != 0, "Errore unlock insert buffer", pthread_exit(NULL));
 }
 
-void buffer_consume(buffer_t *buffer, hash_table_t *hash_table) {
+char *buffer_remove(buffer_t *buffer) {
+    char *result = NULL;
 
     check(pthread_mutex_lock(&buffer->mutex) != 0, "Errore lock remove buffer", pthread_exit(NULL));
 
     while (buffer->index == 0)
         check(pthread_cond_wait(&buffer->empty, &buffer->mutex) != 0, "Errore wait remove buffer", pthread_exit(NULL));
 
-    hash_table_insert(hash_table, buffer->buffer[buffer->cindex % PC_BUFFER_LEN]);
+    result = buffer->buffer[buffer->cindex % PC_BUFFER_LEN];
 
     buffer->cindex += 1;
     buffer->index -= 1;
@@ -67,6 +68,7 @@ void buffer_consume(buffer_t *buffer, hash_table_t *hash_table) {
     check(pthread_cond_signal(&buffer->full) != 0, "Errore signal remove buffer", pthread_exit(NULL));
     check(pthread_mutex_unlock(&buffer->mutex) != 0, "Errore unlock remove buffer", pthread_exit(NULL));
 
+    return result;
 }
 
 void buffer_destroy(buffer_t *buffer) {
