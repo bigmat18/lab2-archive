@@ -4,10 +4,10 @@
 
 buffer_t *buffer_create() {
     buffer_t *buffer_strc = (buffer_t*)malloc(sizeof(buffer_t));
-    check(buffer_strc == NULL, "Errore allocazione buffer", return NULL);
+    check(buffer_strc == NULL, "Errore allocazione buffer", exit(1));
 
     buffer_strc->buffer = (char **)malloc(sizeof(char *) * PC_BUFFER_LEN);
-    check(buffer_strc->buffer == NULL, "Errore allocazione buffer", return NULL);
+    check(buffer_strc->buffer == NULL, "Errore allocazione buffer", exit(1));
 
     buffer_strc->cindex = 0;
     buffer_strc->index = 0;
@@ -34,11 +34,11 @@ buffer_t *buffer_create() {
         free(buffer_strc->buffer);
         free(buffer_strc);
 
-    ferror("Errore nella creazione delle variabili per la gestione del buffer");
+    perror("Errore nella creazione delle variabili per la gestione del buffer");
     return NULL;
 }
 
-int buffer_insert(buffer_t *buffer, const char *str) {
+int buffer_insert(buffer_t *buffer, char *str) {
     check(!pthread_mutex_lock(&buffer->mutex), "Errore lock", pthread_exit(NULL));
 
     while (buffer->index == PC_BUFFER_LEN)

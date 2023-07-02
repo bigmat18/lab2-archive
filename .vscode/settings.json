@@ -23,6 +23,7 @@
         "search.h": "c",
         "stdbool.h": "c",
         "stdio.h": "c",
-        "sstream": "c"
+        "sstream": "c",
+        "__locale": "c"
     }
 }

@@ -1,4 +1,12 @@
 #include <search.h>
+
+#ifndef check(val, str, result)
+    #define check(val, str, result) \
+        if (val)                    \
+            perror(str);            \
+        result;
+#endif check(val, str, result)
+
 #define NUM_ELEM 1000000
 
 #ifndef HASH_TABLE_H

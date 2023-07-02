@@ -5,7 +5,7 @@
             "name": "Debug",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/archivio",
+            "program": "${workspaceFolder}/archivio.out",
             "args": [
                 "5",
                 "5"

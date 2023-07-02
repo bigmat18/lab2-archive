@@ -2,11 +2,10 @@
 #include <stdio.h>
 
 #ifndef check(val, str, result)
-    #define check(val, str, result) \
-        if (val)                    \
-            perror(str);            \
-        result;
-#endif
+    #define check(val, str, result)     \
+        if (val) printf(str);           \
+        else result;
+#endif check(val, str, result)
 
 #define PC_BUFFER_LEN 10
 
@@ -26,7 +25,7 @@ typedef struct {
 
 buffer_t *buffer_create();
 
-int buffer_insert(buffer_t *buffer, const char *str);
+int buffer_insert(buffer_t *buffer, char *str);
 
 char* buffer_remove(buffer_t *buffer);
 
