@@ -20,6 +20,8 @@ int main(int argc, char **argv){
 
   int caposc = open("caposc", O_RDONLY);
   int capolet = open("capolet", O_RDONLY);
+  FILE *file = fopen("lettori.log", "a");
+  check(file == NULL, "Errore apertura file", fclose(1));
 
   buffer_t *buffer_writer = buffer_create();
   buffer_t *buffer_reader = buffer_create();
@@ -34,7 +36,7 @@ int main(int argc, char **argv){
   data_reader->buffer = buffer_reader;
   data_reader->pipe = capolet;
   data_reader->hash_table = hash_table;
-  data_writer->file = fopen("lettori.log", "w");
+  data_reader->file = file;
 
 
   thread_t *prod_writer = thread_create(data_writer, &tbody_prod);
@@ -62,7 +64,7 @@ int main(int argc, char **argv){
     pthread_join(cons_reader[i]->thread, NULL);
 
 
-  fclose(data_reader->file);
+  fclose(file);
   close(caposc);
   close(capolet);
 

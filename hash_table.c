@@ -72,9 +72,9 @@ int hash_table_insert(hash_table_t *hash_table, const char *key) {
 }
 
 int hash_table_count(char *key) {
-    ENTRY *entry;
+    ENTRY *entry = hsearch((ENTRY){key, NULL}, FIND);
 
-    if ((entry = hsearch((ENTRY){key, NULL}, FIND)) == NULL) return 0;
+    if (entry == NULL) return 0;
     else return *((int*)(entry->data));
 }
 
