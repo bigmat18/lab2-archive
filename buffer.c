@@ -52,7 +52,7 @@ int buffer_insert(buffer_t *buffer, char *str) {
     check(pthread_mutex_unlock(&buffer->mutex) != 0, "Errore unlock insert buffer", pthread_exit(NULL));
 }
 
-char *buffer_remove(buffer_t *buffer) {
+char *buffer_remove(buffer_t *buffer, FILE *file) {
     char *result = NULL;
 
     check(pthread_mutex_lock(&buffer->mutex) != 0, "Errore lock remove buffer", pthread_exit(NULL));
@@ -61,6 +61,7 @@ char *buffer_remove(buffer_t *buffer) {
         check(pthread_cond_wait(&buffer->empty, &buffer->mutex) != 0, "Errore wait remove buffer", pthread_exit(NULL));
 
     result = buffer->buffer[buffer->cindex % PC_BUFFER_LEN];
+    if (file != NULL) fprintf(file, "%s %d\n", result, hash_table_count(result));
 
     buffer->cindex += 1;
     buffer->index -= 1;

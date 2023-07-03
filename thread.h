@@ -13,8 +13,9 @@ typedef struct {
 typedef struct {
     buffer_t *buffer;
     hash_table_t *hash_table;
-    int caposc;
-} data_writer_t;
+    int pipe;
+    FILE *file;
+} data_t;
 
 thread_t *thread_create(void *data, void *(*tbody)(void *));
 

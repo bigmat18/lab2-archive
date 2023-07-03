@@ -71,6 +71,13 @@ int hash_table_insert(hash_table_t *hash_table, const char *key) {
     return 0;
 }
 
+int hash_table_count(const char *key) {
+    ENTRY *entry;
+
+    if (entry = hsearch((ENTRY){key, NULL}, FIND) == NULL) return 0;
+    else return *((int*)(entry->data));
+}
+
 void hash_table_destroy(hash_table_t *hash_table) {
     for (unsigned int i = 0; i < hash_table->index_entrys; i++){
         free(hash_table->entrys[i]->data);
