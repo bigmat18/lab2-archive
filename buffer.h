@@ -28,7 +28,7 @@ buffer_t *buffer_create();
 
 int buffer_insert(buffer_t *buffer, char *str);
 
-char *buffer_remove(buffer_t *buffer, FILE *file);
+char *buffer_remove(buffer_t *buffer);
 
 void buffer_destroy(buffer_t *buffer);
 

@@ -105,13 +105,20 @@ void* tbody_prod(void *args){
 void* tbody_cons_writer(void* args){
   data_t *data = (data_t *)args;
   do {
-    hash_table_insert(data->hash_table, buffer_remove(data->buffer, NULL));
+    hash_table_insert(data->hash_table, buffer_remove(data->buffer));
   } while (true);
 }
 
 void *tbody_cons_reader(void *args){
   data_t *data = (data_t *)args;
   do {
-    buffer_remove(data->buffer, data->file);
+    char* key = buffer_remove(data->buffer);
+    int num = hash_table_count(data->hash_table, key);
+
+    FILE *file = fopen("lettori2.log", "a");
+    fprintf(stderr, "%s %d\n", key, num);
+    fprintf(file, "%s %d\n", key, num);
+    fclose(file);
+
   } while(true);
 }

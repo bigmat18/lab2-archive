@@ -52,7 +52,7 @@ int buffer_insert(buffer_t *buffer, char *str) {
     check(pthread_mutex_unlock(&buffer->mutex) != 0, "Errore unlock insert buffer", pthread_exit(NULL));
 }
 
-char *buffer_remove(buffer_t *buffer, FILE *file) {
+char *buffer_remove(buffer_t *buffer) {
     char *result = NULL;
 
     check(pthread_mutex_lock(&buffer->mutex) != 0, "Errore lock remove buffer", pthread_exit(NULL));
@@ -61,16 +61,6 @@ char *buffer_remove(buffer_t *buffer, FILE *file) {
         check(pthread_cond_wait(&buffer->empty, &buffer->mutex) != 0, "Errore wait remove buffer", pthread_exit(NULL));
 
     result = buffer->buffer[buffer->cindex % PC_BUFFER_LEN];
-
-    if (file != NULL) {
-        FILE *file2= fopen("lettori2.log", "a");
-        int val = hash_table_count(result);
-        fprintf(stderr, "%s %d\n", result, val);
-        fprintf(file2, "%s %d\n", result, val);
-        fprintf(file, "%s %d\n", result, val);
-        fclose(file2);
-    }
-
     buffer->cindex += 1;
     buffer->index -= 1;
 

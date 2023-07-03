@@ -1,4 +1,11 @@
 #include <search.h>
+#include <pthread.h>
+
+#define check(val, str, result)                                                          \
+    if (val) {                                                                           \
+        fprintf(stderr, "== %s == Linea: %d, File: %s\n", str, __LINE__, __FILE__);      \
+        result;                                                                          \
+    }
 
 #define NUM_ELEM 1000000
 
@@ -10,6 +17,8 @@ typedef struct {
     unsigned int size_entrys;   // size of entrys array
     unsigned int index_entrys;  // actual index in entrys array
     ENTRY **entrys;
+
+    pthread_mutex_t mutex;
 } hash_table_t;
 
 /**
@@ -30,9 +39,7 @@ hash_table_t *hash_table_create();
 */
 int hash_table_insert(hash_table_t *hash_table, const char *key);
 
-
-int hash_table_count(char *key);
-
+int hash_table_count(hash_table_t *hash_table, char *key);
 
 /**
  * @details Free memory from all data in a hash_table_t
