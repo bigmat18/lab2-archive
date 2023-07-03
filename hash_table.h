@@ -31,7 +31,7 @@ hash_table_t *hash_table_create();
 int hash_table_insert(hash_table_t *hash_table, const char *key);
 
 
-int hash_table_count(const char *key);
+int hash_table_count(char *key);
 
 
 /**

@@ -2,13 +2,13 @@ CC=gcc
 CFLAGS=-std=c11 -Wall -g -O -pthread
 LDLIBS=-lm -pthread
 
-EXECS=archivio.out client1.out client2.out
+EXECS=archivio client1 client2
 
 all: $(EXECS) 
 
 
 
-archivio.out: archivio.o utils.o hash_table.o buffer.o thread.o
+archivio: archivio.o utils.o hash_table.o buffer.o thread.o
 		$(CC) $(LDFLAGS) -o $@ $^ $(LDLIBS)
 
 archivio.o: archivio.c utils.h hash_table.h buffer.h thread.h
@@ -16,12 +16,12 @@ archivio.o: archivio.c utils.h hash_table.h buffer.h thread.h
 
 
 
-client1.out: client1.o
+client1: client1.o
 		$(CC) $(LDFLAGS) -o $@ $^ $(LDLIBS)
 
 
 
-client2.out: client2.o utils.o
+client2: client2.o utils.o
 		$(CC) $(LDFLAGS) -o $@ $^ $(LDLIBS)
 
 client2.o: client2.c utils.h
