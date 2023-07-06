@@ -17,8 +17,20 @@ typedef struct {
     FILE *file;
 } data_t;
 
+/**
+ * @details Funzione che alloca una struttura thread_t.
+ * 
+ * @param *data: dati usati dal thread come paramentro in tbody
+ * @param *(*tbody): puntatore alla funzione da far partire con il thread
+ * 
+ * @return Ritorna puntatore alla stuttura allocata.
+*/
 thread_t *thread_create(void *data, void *(*tbody)(void *));
 
+/**
+ * @details Funzione che dealloca un thread con tutti i dati ad esso legato.
+ * @param *thread: thread da deallocare
+*/
 void thread_destroy(thread_t *thread);
 
 #endif

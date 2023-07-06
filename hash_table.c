@@ -4,9 +4,11 @@
 #include "hash_table.h"
 
 hash_table_t *hash_table_create() {
+    // Creazione hash table
     int id = hcreate(NUM_ELEM);
-    check(id == 0, "Errore nella creazione dell'hash table", pclose(1))
+    check(id == 0, "Errore nella creazione dell'hash table", exit(1))
 
+    // Creazione struttura che gestisce l'hash table
     hash_table_t *hash_table = (hash_table_t*)malloc(sizeof(hash_table_t));
 
     if (hash_table == NULL)
@@ -25,6 +27,7 @@ hash_table_t *hash_table_create() {
 
     return hash_table;
 
+    // Zona dedicata ai cleanup in caso di errori
     mutex_cleanup:
         free(hash_table->entrys);
 
@@ -34,24 +37,29 @@ hash_table_t *hash_table_create() {
     hash_table_cleanup: 
         hdestroy();
 
-    pclose(1);
+    exit(1);
 }
 
 int hash_table_insert(hash_table_t *hash_table, const char *key) {
+    // Allocazione nuova entry
     ENTRY *entry = (ENTRY*)malloc(sizeof(ENTRY)), *entry_ptr;
-    check(entry == NULL, "Errore allocazione entry", pclose(1));
+    check(entry == NULL, "Errore allocazione entry", exit(1));
 
     entry->key = strdup(key);
     entry->data = (int*)malloc(sizeof(int));
-    check(entry->data == NULL, "Errore allocazione int", pclose(1));
+    check(entry->data == NULL, "Errore allocazione int", exit(1));
 
     *((int*)(entry->data)) = 0;
 
-    check(pthread_mutex_lock(&hash_table->mutex) != 0, "Errore lock insert hash table", pclose(1));
+    // Mutex usato per gestire la muta esclusinone sul hash map
+    check(pthread_mutex_lock(&hash_table->mutex) != 0, "Errore lock insert hash table", exit(1));
 
+    // Ricerca nella hash table se esiste o meno questa entry
     entry_ptr = hsearch(*entry, ENTER);
-    check(entry_ptr == NULL, "Errore ricerca in hash table", pclose(1));
+    check(entry_ptr == NULL, "Errore ricerca in hash table", exit(1));
 
+    // In caso non esista viene aggiunta all'hash table ed inoltre viene salvata nell'array 
+    // entrys usato per contare il numero di entrys inserite e per fare la deallocazione
     if (*((int*)entry_ptr->data) == 0){
 
         *((int*)(entry_ptr->data)) = 1;
@@ -63,11 +71,16 @@ int hash_table_insert(hash_table_t *hash_table, const char *key) {
             hash_table->entrys = realloc(hash_table->entrys, sizeof(ENTRY*) * hash_table->size_entrys);
         }
 
-    } else *((int*)(entry_ptr->data)) += 1;
+    } else {
+        // In caso invece già esiste il valore sarà aumentato e sarà eliminata la entry che è stata creata precedentemente
+        *((int*)(entry_ptr->data)) += 1;
+        free(entry);
+    }
 
     fprintf(stderr, "Insert entry: %s --> %d\n", entry_ptr->key, *((int*)entry_ptr->data));
 
-    check(pthread_mutex_unlock(&hash_table->mutex) != 0, "Errore unlock insert hash table", pclose(1));
+    // Si fa l'unlock sul mutex per hash table
+    check(pthread_mutex_unlock(&hash_table->mutex) != 0, "Errore unlock insert hash table", exit(1));
 
     return 0;
 }
@@ -75,12 +88,15 @@ int hash_table_insert(hash_table_t *hash_table, const char *key) {
 int hash_table_count(hash_table_t *hash_table, char *key) {
     int result = 0;
 
-    check(pthread_mutex_lock(&hash_table->mutex) != 0, "Errore unlock count hash table", pclose(1));
+    // Gestione muta esclusione sull'hash table
+    check(pthread_mutex_lock(&hash_table->mutex) != 0, "Errore unlock count hash table", exit(1));
 
+    // Ricerca chiave nell'hash table, in caso venga trovata ritorna il valore di data ed in caso contrario
+    // si mantiene il valore 0 su result che verrà ritornato
     ENTRY *entry = hsearch((ENTRY){key, NULL}, FIND);
-
     if (entry != NULL) result = *((int*)(entry->data));
-    check(pthread_mutex_unlock(&hash_table->mutex) != 0, "Errore unlock count hash table", pclose(1));
+    
+    check(pthread_mutex_unlock(&hash_table->mutex) != 0, "Errore unlock count hash table", exit(1));
     
     return result;
 }

@@ -1,9 +1,6 @@
 #! /usr/bin/env python3
 
-import sys, logging, os, argparse, struct, socket
-import concurrent.futures
-import subprocess
-import posix
+import sys, logging, os, argparse, struct, socket, concurrent.futures, threading, subprocess, signal
 
 
 HOST = "127.0.0.1"  
@@ -25,7 +22,7 @@ def recv_all(conn,n):
   return chunks
 
 
-def handler_connection_A(conn, addr, pipe):
+def handler_connection_A(conn, addr, pipe, mutex):
     with conn:
         print(f"Contattato A da {addr}")
         
@@ -38,11 +35,13 @@ def handler_connection_A(conn, addr, pipe):
         data = recv_all(conn, lenght)
         assert len(data.decode()) == lenght
         print(data.decode())
+        
+        mutex.acquire()
         os.write(pipe, struct.pack("i", lenght) + data)
-        
         logging.info(f"Connessione tipo A {lenght + 4}")
+        mutex.release()
         
-def handler_connection_B(conn, addr, pipe):
+def handler_connection_B(conn, addr, pipe, mutex):
     with conn:
         print(f"Contattato B da {addr}")
         
@@ -63,7 +62,10 @@ def handler_connection_B(conn, addr, pipe):
             print(data)
 
             num_byte += lenght
+            
+            mutex.acquire()
             os.write(pipe, struct.pack("i", lenght) + data)
+            mutex.release()
             
         logging.info(f"Connessione tipo B {num_byte}")
 
@@ -78,12 +80,14 @@ if __name__ == "__main__":
     args = parser.parse_args()
     assert args.number_thread > 0 or args.r > 0 or args.w > 0, "Il numero di thread deve essere maggiore di 0"
 
-    # if args.v:
-    #     subprocess.Popen(["valgrind","--leak-check=full", 
-    #                       "--show-leak-kinds=all", 
-    #                       "--log-file=valgrind-%p.log", 
-    #                       "archivio", str(args.r), str(args.w)])
-    # else: subprocess.Popen(['./archivio', str(args.r), str(args.w)])
+
+    if args.v:
+        archive = subprocess.Popen(["valgrind","--leak-check=full", 
+                          "--show-leak-kinds=all", 
+                          "--log-file=valgrind-%p.log", 
+                          "archivio", str(args.r), str(args.w)])
+    else: 
+        archive = subprocess.Popen(['./archivio', str(args.r), str(args.w)])
 
     if not os.path.exists("caposc"):
         os.mkfifo("caposc")
@@ -98,6 +102,8 @@ if __name__ == "__main__":
             server.listen()
             caposc = os.open("caposc", os.O_WRONLY)
             capolet = os.open("capolet", os.O_WRONLY)
+            
+            mutex = threading.Lock()
             with concurrent.futures.ThreadPoolExecutor(max_workers=args.number_thread) as executor:
                 while True:
                     print("In attesa di un client...")
@@ -105,12 +111,14 @@ if __name__ == "__main__":
                     data = recv_all(conn, 1).decode()
                     assert data == 'a' or data == 'b';
                     
-                    if data == 'a':   executor.submit(handler_connection_A, conn, addr, caposc)
-                    elif data == 'b': executor.submit(handler_connection_B, conn, addr, capolet)
-                    else: print("fai schifo")
+                    if data == 'a':   executor.submit(handler_connection_A, conn, addr, caposc, mutex)
+                    elif data == 'b': executor.submit(handler_connection_B, conn, addr, capolet, mutex)
+                    else: break
         except KeyboardInterrupt: 
             pass
         server.shutdown(socket.SHUT_RDWR)
+        os.kill(archive.pid, signal.SIGTERM)
+        
         os.close("caposc")
         os.close("capolet")
         
