@@ -3,6 +3,7 @@
 #include "thread.h"
 
 #define TOKENIZATOR ".,:; \n\r\t"
+volatile bool interrupt = false;
 
 void *tbody_prod(void *args);
 
@@ -10,13 +11,22 @@ void *tbody_cons_writer(void *args);
 
 void *tbody_cons_reader(void *args);
 
+void *tbody_signals_handler(void *args);
 
 int main(int argc, char **argv){
   assert(argc == 3);
   int num_writers = atoi(argv[1]);
   int num_readers = atoi(argv[2]);
 
+  sigset_t mask;
+  sigfillset(&mask);
+  sigdelset(&mask, SIGQUIT);
+  sigdelset(&mask, SIGTERM);
+  pthread_sigmask(SIG_BLOCK, &mask, NULL);
+
   hash_table_t *hash_table = hash_table_create();
+
+  thread_t *signals_handler = thread_create(&hash_table, &tbody_signals_handler);
 
   int caposc = open("caposc", O_RDONLY);
   int capolet = open("capolet", O_RDONLY);
@@ -53,6 +63,7 @@ int main(int argc, char **argv){
     cons_reader[i] = thread_create(data_reader, &tbody_cons_reader);
 
 
+  pthread_join(signals_handler->thread, NULL);
   pthread_join(prod_writer->thread, NULL);
 
   for(int i=0; i<num_writers; i++)
@@ -64,6 +75,7 @@ int main(int argc, char **argv){
     pthread_join(cons_reader[i]->thread, NULL);
 
 
+  fprintf(stderr, "Terminazione in corso...\n");
   fclose(file);
   close(caposc);
   close(capolet);
@@ -98,7 +110,7 @@ void* tbody_prod(void *args){
       token = strtok(NULL, TOKENIZATOR);
     }
 
-  } while (true); 
+  } while (!interrupt); 
   free(temp_buf);
 }
 
@@ -106,7 +118,7 @@ void* tbody_cons_writer(void* args){
   data_t *data = (data_t *)args;
   do {
     hash_table_insert(data->hash_table, buffer_remove(data->buffer));
-  } while (true);
+  } while (!interrupt);
 }
 
 void *tbody_cons_reader(void *args){
@@ -115,10 +127,40 @@ void *tbody_cons_reader(void *args){
     char* key = buffer_remove(data->buffer);
     int num = hash_table_count(data->hash_table, key);
 
-    FILE *file = fopen("lettori2.log", "a");
     fprintf(stderr, "%s %d\n", key, num);
-    fprintf(file, "%s %d\n", key, num);
-    fclose(file);
+    fprintf(data->file, "%s %d\n", key, num);
+    fflush(data->file);
 
-  } while(true);
+  } while(!interrupt);
+}
+
+void *tbody_signals_handler(void *args) {
+  hash_table_t *data = (hash_table_t*)args;
+  sigset_t mask;
+  sigfillset(&mask);
+  int s;
+
+  while(!interrupt) {
+    check(sigwait(&mask,&s) != 0, "Errore sigwait", pclose(1));
+
+    if (s == SIGINT) {
+      check(pthread_mutex_lock(&data->mutex) != 0, "Errore mutex lock in signals handler", pclose(1));
+      fprintf(stderr, "Numero stringhe in hash map: %d\n", data->index_entrys);
+      check(pthread_mutex_unlock(&data->mutex) != 0, "Errore mutex lock in signals handler", pclose(1));
+    }
+
+    if (s == SIGUSR1) {
+      hash_table_destroy(data);
+      data = hash_table_create();
+    }
+
+    if (s == SIGTERM) {
+      interrupt = true;
+      check(pthread_mutex_lock(&data->mutex) != 0, "Errore mutex lock in signals handler", pclose(1));
+      fprintf(stdout, "Numero stringhe in hash map: %d\n", data->index_entrys);
+      check(pthread_mutex_lock(&data->mutex) != 0, "Errore mutex lock in signals handler", pclose(1));
+    }
+
+  }
+  return NULL;
 }

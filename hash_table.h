@@ -18,7 +18,7 @@ typedef struct {
     unsigned int index_entrys;  // actual index in entrys array
     ENTRY **entrys;
 
-    pthread_mutex_t mutex;
+    pthread_mutex_t mutex;      // the butex that manage the mutal exclusion in hash table
 } hash_table_t;
 
 /**
@@ -39,7 +39,17 @@ hash_table_t *hash_table_create();
 */
 int hash_table_insert(hash_table_t *hash_table, const char *key);
 
+
+/**
+ * @details Return the count in the entry with key value
+ * 
+ * @param *hash_table: pointer to hash table
+ * @param *key: the key of the entry
+ * 
+ * @return return the count if the entry exist and 0 if the entry will not be found
+*/
 int hash_table_count(hash_table_t *hash_table, char *key);
+
 
 /**
  * @details Free memory from all data in a hash_table_t

@@ -40,13 +40,19 @@ def handler_connection_A(conn, addr, pipe):
         print(data.decode())
         os.write(pipe, struct.pack("i", lenght) + data)
         
+        logging.info(f"Connessione tipo A {lenght + 4}")
+        
 def handler_connection_B(conn, addr, pipe):
     with conn:
         print(f"Contattato B da {addr}")
         
+        num_byte = 0
+        
         while True:
             data = recv_all(conn, 4)
             assert len(data) == 4
+            
+            num_byte += 4
             
             lenght = struct.unpack("!i", data)[0]
             if lenght == 0: break;
@@ -55,7 +61,12 @@ def handler_connection_B(conn, addr, pipe):
             data = recv_all(conn, lenght)
             assert len(data.decode()) == lenght
             print(data)
+
+            num_byte += lenght
             os.write(pipe, struct.pack("i", lenght) + data)
+            
+        logging.info(f"Connessione tipo B {num_byte}")
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter)
@@ -102,5 +113,8 @@ if __name__ == "__main__":
         server.shutdown(socket.SHUT_RDWR)
         os.close("caposc")
         os.close("capolet")
+        
+        os.unlink("capolet")
+        os.unlink("caposc")
 
 
