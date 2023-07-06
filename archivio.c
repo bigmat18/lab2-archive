@@ -1,4 +1,12 @@
-#include "utils.h"
+#include <signal.h>
+#include <string.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <sys/types.h>
+#include <stdbool.h>
+#include <fcntl.h>
+#include <assert.h>
+#include <unistd.h>
 #include "hash_table.h"
 #include "thread.h"
 
@@ -26,12 +34,12 @@ int main(int argc, char **argv){
 
   hash_table_t *hash_table = hash_table_create();
 
-  thread_t *signals_handler = thread_create(&hash_table, &tbody_signals_handler);
+  thread_t *signals_handler = thread_create(hash_table, &tbody_signals_handler);
 
   int caposc = open("caposc", O_RDONLY);
   int capolet = open("capolet", O_RDONLY);
   FILE *file = fopen("lettori.log", "a");
-  check(file == NULL, "Errore apertura file", fclose(1));
+  check(file == NULL, "Errore apertura file", pclose(1));
 
   buffer_t *buffer_writer = buffer_create();
   buffer_t *buffer_reader = buffer_create();
@@ -95,12 +103,12 @@ void* tbody_prod(void *args){
   char *temp_buf;
 
   do {
-    size_t e = readn(data->pipe, &n, sizeof(n));
+    size_t e = read(data->pipe, &n, sizeof(n));
     check(e != sizeof(n), "Errore in reading 1", exit(1));
 
     temp_buf = (char*)malloc(n * sizeof(char));
 
-    e = readn(data->pipe, temp_buf, n);
+    e = read(data->pipe, temp_buf, n);
     check(e != n, "Errore in reading 1", exit(1));
 
     char *token = strtok(temp_buf, TOKENIZATOR);
@@ -147,11 +155,6 @@ void *tbody_signals_handler(void *args) {
       check(pthread_mutex_lock(&data->mutex) != 0, "Errore mutex lock in signals handler", pclose(1));
       fprintf(stderr, "Numero stringhe in hash map: %d\n", data->index_entrys);
       check(pthread_mutex_unlock(&data->mutex) != 0, "Errore mutex lock in signals handler", pclose(1));
-    }
-
-    if (s == SIGUSR1) {
-      hash_table_destroy(data);
-      data = hash_table_create();
     }
 
     if (s == SIGTERM) {
