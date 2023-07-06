@@ -21,14 +21,14 @@ client1: client1.o
 
 
 
-client2: client2.o
+client2: client2.o thread.o
 		$(CC) $(LDFLAGS) -o $@ $^ $(LDLIBS)
 
-client2.o: client2.c
+client2.o: client2.c thread.h
 		$(CC) $(CFLAGS) -c $<
 
 
 
 clean: 
-	rm -f *.o *.out $(EXECS)
+	rm -f *.o *.out $(EXECS) capolet caposc
 

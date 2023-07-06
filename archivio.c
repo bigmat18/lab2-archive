@@ -143,6 +143,7 @@ void* tbody_prod(void *args){
 
   // Deallocazione buffer temporaneo
   free(temp_buf);
+  pthread_exit(NULL);
 }
 
 void* tbody_cons_writer(void* args){
@@ -150,6 +151,7 @@ void* tbody_cons_writer(void* args){
   do {
     hash_table_insert(data->hash_table, buffer_remove(data->buffer));
   } while (!interrupt);
+  pthread_exit(NULL);
 }
 
 void *tbody_cons_reader(void *args){
@@ -163,6 +165,7 @@ void *tbody_cons_reader(void *args){
     fflush(data->file);
 
   } while(!interrupt);
+  pthread_exit(NULL);
 }
 
 void *tbody_signals_handler(void *args) {
@@ -188,5 +191,5 @@ void *tbody_signals_handler(void *args) {
     }
 
   }
-  return NULL;
+  pthread_exit(NULL);
 }
