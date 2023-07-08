@@ -5,10 +5,9 @@
             "name": "Debug",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/archivio.out",
+            "program": "${workspaceFolder}/client1",
             "args": [
-                "5",
-                "5"
+                "file1"
             ],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
