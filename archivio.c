@@ -194,7 +194,7 @@ void *tbody_cons_reader(void *args){
 }
 
 void *tbody_signals_handler(void *args) {
-  handler_data_t *data = (hash_table_t*)args;
+  handler_data_t *data = (handler_data_t*)args;
   sigset_t mask;
   sigfillset(&mask);
   int s;

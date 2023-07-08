@@ -77,13 +77,13 @@ if __name__ == "__main__":
     assert args.number_thread > 0 or args.r > 0 or args.w > 0, "Il numero di thread deve essere maggiore di 0"
 
 
-    # if args.v:
-    #     archive = subprocess.Popen(["valgrind","--leak-check=full", 
-    #                       "--show-leak-kinds=all", 
-    #                       "--log-file=valgrind-%p.log", 
-    #                       "archivio", str(args.r), str(args.w)])
-    # else: 
-    #     archive = subprocess.Popen(['./archivio', str(args.r), str(args.w)])
+    if args.v:
+        archive = subprocess.Popen(["valgrind","--leak-check=full", 
+                          "--show-leak-kinds=all", 
+                          "--log-file=valgrind-%p.log", 
+                          "archivio", str(args.r), str(args.w)])
+    else: 
+        archive = subprocess.Popen(['./archivio', str(args.r), str(args.w)])
 
     if not os.path.exists("caposc"):
         os.mkfifo("caposc")
@@ -108,17 +108,18 @@ if __name__ == "__main__":
                     data = conn.recv(1).decode()
                     assert data == 'a' or data == 'b';
                     
-                    if data == 'a':   executor.submit(handler_connection_A, conn, addr, caposc, mutex_pipe, mutex_log)
-                    elif data == 'b': executor.submit(handler_connection_B, conn, addr, capolet, mutex_pipe, mutex_log)
+                    if data == 'a':   executor.submit(handler_connection_A, conn, addr, capolet, mutex_pipe, mutex_log)
+                    elif data == 'b': executor.submit(handler_connection_B, conn, addr, caposc, mutex_pipe, mutex_log)
                     else: break
-        except KeyboardInterrupt: 
-            server.shutdown(socket.SHUT_RDWR)
-            # os.kill(archive.pid, signal.SIGTERM)
+        except KeyboardInterrupt:
+            pass
+        server.shutdown(socket.SHUT_RDWR)
+        os.kill(archive.pid, signal.SIGTERM)
             
-            os.close("caposc")
-            os.close("capolet")
+        os.close("caposc")
+        os.close("capolet")
             
-            os.unlink("capolet")
-            os.unlink("caposc")
+        os.unlink("capolet")
+        os.unlink("caposc")
 
 

@@ -30,5 +30,5 @@ client2.o: client2.c thread.h
 
 
 clean: 
-	rm -f *.o *.out $(EXECS) capolet caposc
+	rm -f *.o *.out $(EXECS) capolet caposc lettori.log server.log
 
