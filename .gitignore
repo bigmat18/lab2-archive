@@ -1,3 +1,5 @@
 *.o
 .vscode/*
 istructions/*
+lettori.log
+server.log
