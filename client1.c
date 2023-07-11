@@ -7,17 +7,19 @@
 #include <arpa/inet.h>
 #include <sys/socket.h>
 #include <unistd.h>
+#include <errno.h>
 
 #define HOST "127.0.0.1"
 #define PORT 58449
 #define Max_sequence_length 2048
 
-#define check(val, str, result)                                                          \
-    if (val) {                                                                           \
-        fprintf(stderr, "== %s == Linea: %d, File: %s\n", str, __LINE__, __FILE__);      \
-        result;                                                                          \
+#define check(val, str, result)                                             \
+    if (val) {                                                              \
+        if (errno == 0) fprintf(stderr, "== %s\n", str);                    \
+        else fprintf(stderr, "== %s: %s\n", str, strerror(errno));          \
+        fprintf(stderr, "== Linea: %d, File: %s\n", __LINE__, __FILE__);    \
+        result;                                                             \
     }
-
 
 int main(int argv, char** argc){
   assert(argv == 2);

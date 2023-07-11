@@ -1,3 +1,4 @@
+#define _GNU_SOURCE
 #include <signal.h>
 #include <string.h>
 #include <stdio.h>
@@ -200,12 +201,12 @@ void *tbody_signals_handler(void *args) {
   int s;
 
   while(true) {
-    check(sigwait(&mask,&s) != 0, "Errore sigwait", exit(1));
+    check(sigwait(&mask,&s) != 0, "Errore sigwait", pthread_exit(NULL));
 
     if (s == SIGINT) {
-      check(pthread_mutex_lock(&data->hash_table->mutex) != 0, "Errore mutex lock in signals handler", exit(1));
+      check(pthread_mutex_lock(&data->hash_table->mutex) != 0, "Errore mutex lock in signals handler", pthread_exit(NULL));
       fprintf(stderr, "Numero stringhe in hash map: %d\n", data->hash_table->index_entrys);
-      check(pthread_mutex_unlock(&data->hash_table->mutex) != 0, "Errore mutex lock in signals handler", exit(1));
+      check(pthread_mutex_unlock(&data->hash_table->mutex) != 0, "Errore mutex lock in signals handler", pthread_exit(NULL));
     }
 
     else if (s == SIGTERM) {
@@ -213,9 +214,9 @@ void *tbody_signals_handler(void *args) {
       interrupt = true;
       check(pthread_mutex_unlock(data->interrupt_mutex) != 0, "Errore unlock interrupt", pthread_exit(NULL));
 
-      check(pthread_mutex_lock(&data->hash_table->mutex) != 0, "Errore mutex lock in signals handler", exit(1));
+      check(pthread_mutex_lock(&data->hash_table->mutex) != 0, "Errore mutex lock in signals handler", pthread_exit(NULL));
       fprintf(stdout, "Numero stringhe in hash map: %d\n", data->hash_table->index_entrys);
-      check(pthread_mutex_lock(&data->hash_table->mutex) != 0, "Errore mutex lock in signals handler", exit(1));
+      check(pthread_mutex_lock(&data->hash_table->mutex) != 0, "Errore mutex lock in signals handler", pthread_exit(NULL));
 
       break;
     }

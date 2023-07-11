@@ -40,12 +40,12 @@ hash_table_t *hash_table_create() {
     exit(1);
 }
 
-int hash_table_insert(hash_table_t *hash_table, const char *key) {
+int hash_table_insert(hash_table_t *hash_table, char *key) {
     // Allocazione nuova entry
     ENTRY *entry = (ENTRY*)malloc(sizeof(ENTRY)), *entry_ptr;
     check(entry == NULL, "Errore allocazione entry", exit(1));
 
-    entry->key = strdup(key);
+    entry->key = key;
     entry->data = (int*)malloc(sizeof(int));
     check(entry->data == NULL, "Errore allocazione int", exit(1));
 
@@ -107,6 +107,6 @@ void hash_table_destroy(hash_table_t *hash_table) {
         free(hash_table->entrys[i]->key);
     }
     hdestroy();
-    free(hash_table);
     free(hash_table->entrys);
+    free(hash_table);
 }

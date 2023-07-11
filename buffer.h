@@ -1,12 +1,17 @@
+#define _GNU_SOURCE
 #include <pthread.h>
 #include <stdio.h>
+#include <errno.h>
+#include <string.h>
 #include "hash_table.h"
 
 // Macro creata per controllare gli errori nei valori di ritorno
-#define check(val, str, result)                                                          \
-    if (val) {                                                                           \
-        fprintf(stderr, "== %s == Linea: %d, File: %s\n", str, __LINE__, __FILE__);      \
-        result;                                                                          \
+#define check(val, str, result)                                             \
+    if (val) {                                                              \
+        if (errno == 0) fprintf(stderr, "== %s\n", str);                    \
+        else fprintf(stderr, "== %s: %s\n", str, strerror(errno));          \
+        fprintf(stderr, "== Linea: %d, File: %s\n", __LINE__, __FILE__);    \
+        result;                                                             \
     }
 
 #define PC_BUFFER_LEN 10

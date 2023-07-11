@@ -1,6 +1,6 @@
 #! /usr/bin/env python3
 
-import sys, logging, os, argparse, struct, socket, concurrent.futures, threading, subprocess, signal
+import sys, logging, os, argparse, struct, socket, concurrent.futures, threading, subprocess, signal, tempfile
 
 
 HOST = "127.0.0.1"  
@@ -81,23 +81,28 @@ if __name__ == "__main__":
         archive = subprocess.Popen(["valgrind","--leak-check=full", 
                           "--show-leak-kinds=all", 
                           "--log-file=valgrind-%p.log", 
-                          "archivio", str(args.r), str(args.w)])
+                          "./archivio", str(args.r), str(args.w)])
     else: 
         archive = subprocess.Popen(['./archivio', str(args.r), str(args.w)])
 
-    if not os.path.exists("caposc"):
-        os.mkfifo("caposc")
+    tmpdir = tempfile.mkdtemp()
+    caposc_filename = os.path.join(tmpdir, 'caposc')
+    capolet_filename = os.path.join(tmpdir, 'capolet')
+    
+    if not os.path.exists(caposc_filename):
+        os.mkfifo(caposc_filename)
         
-    if not os.path.exists("capolet"):
-        os.mkfifo("capolet")
+    if not os.path.exists(capolet_filename):
+        os.mkfifo(capolet_filename)
         
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as server:
         try:
-            server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)      
+            server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
             server.bind((HOST, PORT))
             server.listen()
-            caposc = os.open("caposc", os.O_WRONLY)
-            capolet = os.open("capolet", os.O_WRONLY)
+            
+            caposc = os.open(caposc_filename, os.O_WRONLY)
+            capolet = os.open(capolet_filename, os.O_WRONLY)
             
             mutex_pipe = threading.Lock()
             mutex_log = threading.Lock()
@@ -115,7 +120,7 @@ if __name__ == "__main__":
             pass
         server.shutdown(socket.SHUT_RDWR)
         os.kill(archive.pid, signal.SIGTERM)
-            
+                
         os.close("caposc")
         os.close("capolet")
             

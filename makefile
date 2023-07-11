@@ -1,5 +1,5 @@
 CC=gcc
-CFLAGS=-std=c11 -Wall -g -O -pthread
+CFLAGS=-g -Wall -Wextra -O -pthread
 LDLIBS=-lm -pthread
 
 EXECS=archivio client1 client2
@@ -30,5 +30,5 @@ client2.o: client2.c thread.h
 
 
 clean: 
-	rm -f *.o *.out $(EXECS) capolet caposc lettori.log server.log
+	rm -f *.o *.out $(EXECS) capolet caposc lettori.log server.log valgrind-*.log
 

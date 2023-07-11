@@ -1,10 +1,15 @@
+#define _GNU_SOURCE
 #include <search.h>
 #include <pthread.h>
+#include <errno.h>
 
-#define check(val, str, result)                                                          \
-    if (val) {                                                                           \
-        fprintf(stderr, "== %s == Linea: %d, File: %s\n", str, __LINE__, __FILE__);      \
-        result;                                                                          \
+// Macro creata per controllare gli errori nei valori di ritorno
+#define check(val, str, result)                                             \
+    if (val) {                                                              \
+        if (errno == 0) fprintf(stderr, "== %s\n", str);                    \
+        else fprintf(stderr, "== %s: %s\n", str, strerror(errno));          \
+        fprintf(stderr, "== Linea: %d, File: %s\n", __LINE__, __FILE__);    \
+        result;                                                             \
     }
 
 #define NUM_ELEM 1000000
@@ -37,7 +42,7 @@ hash_table_t *hash_table_create();
  * 
  * @return return 1 if there is an errors, return 0 without errors
 */
-int hash_table_insert(hash_table_t *hash_table, const char *key);
+int hash_table_insert(hash_table_t *hash_table, char *key);
 
 
 /**

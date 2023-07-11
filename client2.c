@@ -7,6 +7,7 @@
 #include <assert.h>
 #include <string.h>
 #include <unistd.h>
+#include <errno.h>
 #include "thread.h"
 
 #define HOST "127.0.0.1"
@@ -14,12 +15,13 @@
 
 #define Max_sequence_length 2048
 
-#define check(val, str, result)                                                          \
-    if (val) {                                                                           \
-        fprintf(stderr, "== %s == Linea: %d, File: %s\n", str, __LINE__, __FILE__);      \
-        result;                                                                          \
+#define check(val, str, result)                                             \
+    if (val) {                                                              \
+        if (errno == 0) fprintf(stderr, "== %s\n", str);                    \
+        else fprintf(stderr, "== %s: %s\n", str, strerror(errno));          \
+        fprintf(stderr, "== Linea: %d, File: %s\n", __LINE__, __FILE__);    \
+        result;                                                             \
     }
-
 
 void *tbody(void *args){
   FILE *file = (FILE*)args;
@@ -50,6 +52,8 @@ void *tbody(void *args){
     check(write(fd_skt, &tmp, sizeof(tmp)) != sizeof(tmp), "Errore write 2", exit(1));
 
     check(write(fd_skt, buffer, e) != e, "Errore write 3", exit(1));
+    free(buffer);
+    buffer = NULL;
   }
 
   tmp = 0;
@@ -77,7 +81,7 @@ int main(int argv, char **argc){
 
   printf("\nDeallocazion in corso...\n");
   for (int i = 0; i < argv-1; ++i)
-    free(threads[i]);
+    thread_destroy(threads[i]);
 
   return 0;
 }

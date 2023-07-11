@@ -19,6 +19,5 @@ thread_t *thread_create(void *data, void *(*tbody)(void *)) {
 }
 
 void thread_destroy(thread_t *thread) {
-    free(thread->data);
     free(thread);
 }
