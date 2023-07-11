@@ -29,8 +29,16 @@ typedef struct {
     struct sockaddr_in serv_addr;
 } connection_t;
 
+/**
+ * @details Funzione che crea ed avvia una connessione
+ * @return Ritorna il puntatore alla struttura wrap della connessione
+*/
 connection_t *connection_create();
 
+/**
+ * @details Funzione che stoppa la connessione e dealloca la struttura wrap.
+ * @param *connection: connessione da stoppare e deallocare
+*/
 void connection_destroy(connection_t *connection);
 
 #endif
