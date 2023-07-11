@@ -1,25 +1,11 @@
 #define _GNU_SOURCE 
-#include <stdio.h> 
-#include <stdlib.h>
 #include <stdbool.h> 
 #include <assert.h> 
 #include <string.h> 
-#include <arpa/inet.h>
-#include <sys/socket.h>
 #include <unistd.h>
-#include <errno.h>
+#include "connection.h"
 
-#define HOST "127.0.0.1"
-#define PORT 58449
 #define Max_sequence_length 2048
-
-#define check(val, str, result)                                             \
-    if (val) {                                                              \
-        if (errno == 0) fprintf(stderr, "== %s\n", str);                    \
-        else fprintf(stderr, "== %s: %s\n", str, strerror(errno));          \
-        fprintf(stderr, "== Linea: %d, File: %s\n", __LINE__, __FILE__);    \
-        result;                                                             \
-    }
 
 int main(int argv, char** argc){
   assert(argv == 2);
@@ -27,45 +13,31 @@ int main(int argv, char** argc){
   FILE *file = fopen(argc[1], "r");
   check(file == NULL, "Errore apertura file", exit(1));
 
-  int fd_skt = 0;
-  struct sockaddr_in serv_addr;
-
-  check((fd_skt = socket(AF_INET, SOCK_STREAM, 0)) < 0, "Errore creazione socket", exit(1));
-
-  serv_addr.sin_family = AF_INET;
-  serv_addr.sin_port = htons(PORT);
-  serv_addr.sin_addr.s_addr = inet_addr(HOST);
-
-  check(connect(fd_skt, &serv_addr, sizeof(serv_addr)) < 0, "Errore connessione", exit(1));
-
+  connection_t *connection = NULL;
+  char type = 'a';
   ssize_t e;
   size_t n;
-  unsigned short int num_byte = 0, tmp;
-  char *temp_buffer = NULL;
-  char *buffer = (char*)malloc(num_byte);
+  unsigned short int tmp;
+  char *buffer = NULL;
 
-  char type = 'a';
-  check(write(fd_skt, &type, sizeof(type)) != sizeof(type),"Errore write 1", exit(1));
+  while ((e = getline(&buffer, &n, file)) >= 0) {
+    connection = connection_create();
+    check(write(connection->fd_skt, &type, sizeof(type)) != sizeof(type), "Errore write 1", exit(1));
 
-  while ((e = getline(&temp_buffer, &n, file)) >= 0) {
-    num_byte += e;
+    check(e >= Max_sequence_length, "Sequenza di byte troppo lunga", exit(1));
 
-    buffer = realloc(buffer, num_byte);
-    strcat(buffer, temp_buffer);
+    tmp = htons(e);
+    check(write(connection->fd_skt, &tmp, sizeof(tmp)) != sizeof(tmp), "Errore write 2", exit(1));
 
-    free(temp_buffer);
-    temp_buffer = NULL;
+    check(write(connection->fd_skt, buffer, e) != e, "Errore write 3", exit(1));
+    fprintf(stderr, "%zd - %s", e, buffer);
+
+    free(buffer);
+    buffer = NULL;
+    connection_destroy(connection);
   }
 
-  check(num_byte >= Max_sequence_length, "Sequenza di byte troppo lunga", exit(1));
-
-  tmp = htons(num_byte);
-  check(write(fd_skt, &tmp, sizeof(tmp)) != sizeof(tmp), "Errore write 2", exit(1));
-
-  check(write(fd_skt, buffer, num_byte) != num_byte, "Errore write 3", exit(1));
-  fprintf(stderr, "%hu - %lu - %lu - %s", num_byte, sizeof(num_byte), strlen(buffer), buffer);
-
-  check(close(fd_skt) < 0, "Errore chiusura socket", exit(1));  
+  printf("\nDeallocazion in corso...\n");
   fclose(file);
 
   return 0;

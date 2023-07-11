@@ -210,6 +210,8 @@ void *tbody_signals_handler(void *args) {
     }
 
     else if (s == SIGTERM) {
+      fprintf(stderr, "Terminazione in corso");
+      
       check(pthread_mutex_lock(data->interrupt_mutex) != 0, "Errore unlock interrupt", pthread_exit(NULL));
       interrupt = true;
       check(pthread_mutex_unlock(data->interrupt_mutex) != 0, "Errore unlock interrupt", pthread_exit(NULL));

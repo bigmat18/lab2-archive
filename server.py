@@ -1,7 +1,7 @@
 #! /usr/bin/env python3
 
-import sys, logging, os, argparse, struct, socket, concurrent.futures, threading, subprocess, signal, tempfile
-
+import sys, logging, os, argparse, struct, socket
+import concurrent.futures, threading, subprocess, signal
 
 HOST = "127.0.0.1"  
 PORT = 58449
@@ -84,16 +84,12 @@ if __name__ == "__main__":
                           "./archivio", str(args.r), str(args.w)])
     else: 
         archive = subprocess.Popen(['./archivio', str(args.r), str(args.w)])
-
-    tmpdir = tempfile.mkdtemp()
-    caposc_filename = os.path.join(tmpdir, 'caposc')
-    capolet_filename = os.path.join(tmpdir, 'capolet')
     
-    if not os.path.exists(caposc_filename):
-        os.mkfifo(caposc_filename)
+    if not os.path.exists('caposc'):
+        os.mkfifo('caposc')
         
-    if not os.path.exists(capolet_filename):
-        os.mkfifo(capolet_filename)
+    if not os.path.exists('capolet'):
+        os.mkfifo('capolet')
         
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as server:
         try:
@@ -101,8 +97,8 @@ if __name__ == "__main__":
             server.bind((HOST, PORT))
             server.listen()
             
-            caposc = os.open(caposc_filename, os.O_WRONLY)
-            capolet = os.open(capolet_filename, os.O_WRONLY)
+            caposc = os.open('caposc', os.O_WRONLY)
+            capolet = os.open('capolet', os.O_WRONLY)
             
             mutex_pipe = threading.Lock()
             mutex_log = threading.Lock()

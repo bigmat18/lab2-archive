@@ -16,15 +16,18 @@ archivio.o: archivio.c hash_table.h buffer.h thread.h
 
 
 
-client1: client1.o
+client1: client1.o connection.o
 		$(CC) $(LDFLAGS) -o $@ $^ $(LDLIBS)
 
+client1.o: client1.c connection.h
+		$(CC) $(CFLAGS) -c $<
 
 
-client2: client2.o thread.o
+
+client2: client2.o thread.o connection.o
 		$(CC) $(LDFLAGS) -o $@ $^ $(LDLIBS)
 
-client2.o: client2.c thread.h
+client2.o: client2.c thread.h connection.h
 		$(CC) $(CFLAGS) -c $<
 
 
