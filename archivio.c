@@ -14,6 +14,7 @@
 // Stringa usata per tokenizare
 #define TOKENIZATOR ".,:; \n\r\t"
 
+sigset_t mask;
 
 // ------ Definizioni funzioni usati dai thread -------
 void *tbody_prod(void *args);
@@ -32,9 +33,9 @@ int main(int argc, char **argv){
   int num_readers = atoi(argv[2]);
 
   // Inizzializzaioni informazioni per i segnali
-  sigset_t mask;
-  sigfillset(&mask);
-  sigdelset(&mask, SIGQUIT);
+  sigemptyset(&mask);
+  sigaddset(&mask, SIGTERM);
+  sigaddset(&mask, SIGINT);
   pthread_sigmask(SIG_BLOCK, &mask, NULL);
 
   // Creazioni hash_table
@@ -218,8 +219,6 @@ void *tbody_cons_reader(void *args){
 
 void *tbody_signals_handler(void *args) {
   hash_table_t *data = (hash_table_t*)args;
-  sigset_t mask;
-  sigfillset(&mask);
   int s;
 
   while(true) {

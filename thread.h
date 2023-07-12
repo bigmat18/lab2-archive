@@ -22,6 +22,11 @@ typedef struct {
     int num_sub_threads;
 } data_t;
 
+typedef struct {
+    hash_table_t *hash_table;
+    sigset_t *mask;
+} handler_data_t;
+
 /**
  * @details Funzione che alloca una struttura thread_t.
  * 
