@@ -145,11 +145,13 @@ void* tbody_prod(void *args){
 
     // Allocazione buffere dove scrivere la seguenza di caratteri
     if(n <= 0) continue;
-    temp_buf = (char*)malloc(n * sizeof(char));
+    temp_buf = (char*)malloc((n + 1) * sizeof(char));
 
     // Lettura dalla pipe della seguneza di caratteri
     e = read(data->pipe, temp_buf, n);
     if (e != n) break;
+
+    temp_buf[n] = '\0';
 
     // Inserimento nel buffer
     for (token = strtok_r(temp_buf, TOKENIZATOR, &rest);
