@@ -16,7 +16,7 @@ logging.basicConfig(filename=os.path.basename(sys.argv[0][:-3]) + '.log',
 def handler_connection_A(conn: socket.socket, addr: str, pipe: int, 
                          mutex_pipe: threading.Lock(), mutex_log: threading.Lock()):
     with conn:
-        print(f"Contattato A da {addr}")
+        # print(f"Contattato A da {addr}")
         
         # Recezione del valore lenght che essendo max 2048 uso 2 byte
         data = conn.recv(2)
@@ -43,7 +43,7 @@ def handler_connection_A(conn: socket.socket, addr: str, pipe: int,
 def handler_connection_B(conn: socket.socket, addr: str, pipe: int, 
                          mutex_pipe: threading.Lock(), mutex_log: threading.Lock()):
     with conn:
-        print(f"Contattato B da {addr}")
+        # print(f"Contattato B da {addr}")
         
         # Variabile per contare i byte presi
         num_byte = 0
@@ -119,7 +119,7 @@ if __name__ == "__main__":
                 
                 # Ciclo che gestisce l'arrivo delle rischieste di connessione da parte dei client
                 while True:
-                    print("In attesa di un client...")
+                    # print("In attesa di un client...")
                     conn, addr = server.accept()
                     data = conn.recv(1).decode()
                     assert data == 'a' or data == 'b';
