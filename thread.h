@@ -19,12 +19,9 @@ typedef struct {
     FILE *file;
     pthread_mutex_t file_mutex;
     pthread_mutex_t *interrupt_mutex;
-} data_t;
 
-typedef struct {
-    hash_table_t *hash_table;
-    pthread_mutex_t *interrupt_mutex;
-} handler_data_t;
+    int num_sub_threads;
+} data_t;
 
 /**
  * @details Funzione che alloca una struttura thread_t.
