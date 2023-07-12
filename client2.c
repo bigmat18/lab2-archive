@@ -26,7 +26,7 @@ void *tbody(void *args){
   while((e = getline(&buffer, &n, file)) >= 0) {
 
     check(e >= Max_sequence_length, "Sequenza di byte troppo lunga", exit(1));
-    fprintf(stderr, "%zd - %s", e, buffer);
+    // fprintf(stderr, "%zd - %s", e, buffer);
 
     tmp = htons(e);
     check(write(connection->fd_skt, &tmp, sizeof(tmp)) != sizeof(tmp), "Errore write 2", exit(1));
@@ -66,7 +66,7 @@ int main(int argv, char **argc){
     pthread_join(threads[i]->thread, NULL);
 
   // Deallocazione dei threads
-  printf("\nDeallocazion in corso...\n");
+  // printf("\nDeallocazion in corso...\n");
   for (int i = 0; i < argv-1; ++i)
     thread_destroy(threads[i]);
 

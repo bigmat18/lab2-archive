@@ -104,7 +104,7 @@ int main(int argc, char **argv){
 
 
   // Chiusura file e connessioni a pipe e deallocazioni delle strutture utilizzate
-  fprintf(stderr, "Terminazione in corso...\n");
+  // fprintf(stderr, "Terminazione in corso...\n");
 
   thread_destroy(signals_handler);
   thread_destroy(prod_reader);
@@ -173,7 +173,7 @@ void* tbody_prod(void *args){
   for (int i = 0; i < data->num_sub_threads; i++)
     buffer_insert(data->buffer, NULL);
 
-  fprintf(stderr, "Terminazione thread prod\n");
+  // fprintf(stderr, "Terminazione thread prod\n");
   pthread_exit(NULL);
 }
 
@@ -187,7 +187,7 @@ void* tbody_cons_writer(void* args){
     hash_table_insert(data->hash_table, str);
   } while (true);
 
-  fprintf(stderr, "Terminazione thread cons writer\n");
+  // fprintf(stderr, "Terminazione thread cons writer\n");
   pthread_exit(NULL);
 }
 
@@ -212,7 +212,7 @@ void *tbody_cons_reader(void *args){
     free(key);
   } while(true);
 
-  fprintf(stderr, "Terminazione thread cons reader\n");
+  // fprintf(stderr, "Terminazione thread cons reader\n");
   pthread_exit(NULL);
 }
 
@@ -243,6 +243,6 @@ void *tbody_signals_handler(void *args) {
 
   }
 
-  fprintf(stderr, "Terminazione thread handler signals\n");
+  // fprintf(stderr, "Terminazione thread handler signals\n");
   pthread_exit(NULL);
 }

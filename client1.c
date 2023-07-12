@@ -33,7 +33,7 @@ int main(int argv, char** argc){
     check(write(connection->fd_skt, &tmp, sizeof(tmp)) != sizeof(tmp), "Errore write 2", exit(1));
 
     check(write(connection->fd_skt, buffer, e) != e, "Errore write 3", exit(1));
-    fprintf(stderr, "%zd - %s", e, buffer);
+    // fprintf(stderr, "%zd - %s", e, buffer);
 
     // Pulizia buffer per ciclo successiovo
     free(buffer);
@@ -45,7 +45,7 @@ int main(int argv, char** argc){
 
   if (buffer != NULL) free(buffer);
 
-  printf("\nDeallocazion in corso...\n");
+  // printf("\nDeallocazion in corso...\n");
   // Chiusura file
   fclose(file);
 

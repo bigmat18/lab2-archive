@@ -18,7 +18,6 @@ typedef struct {
 
     FILE *file;
     pthread_mutex_t file_mutex;
-    pthread_mutex_t *interrupt_mutex;
 
     int num_sub_threads;
 } data_t;

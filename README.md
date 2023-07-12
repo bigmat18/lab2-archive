@@ -1,3 +1,5 @@
+Info: progetto ridotto.
+
 # Descrizione 'hash_map.c/.h'
 In questo file ho voluto definire una struttura che contenesse tutti i dati che potevano servire per la gestione di una hash map, ho inotre definito le varie funzioni che operano su questa hash map.
 
