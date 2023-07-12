@@ -15,7 +15,7 @@ void *tbody(void *args){
 
   // Definzioni variabili utili
   ssize_t e;
-  size_t n;
+  size_t n = 0;
   char *buffer = NULL;
 
   // Invio messaggio al server che dice che questa è una connessione di tipo b
@@ -35,6 +35,8 @@ void *tbody(void *args){
     free(buffer);
     buffer = NULL;
   }
+
+  if(buffer != NULL) free(buffer);
 
   // Messaggio al buffer che dice che il file è terminato
   tmp = 0;

@@ -43,6 +43,8 @@ int main(int argv, char** argc){
     connection_destroy(connection);
   }
 
+  if (buffer != NULL) free(buffer);
+
   printf("\nDeallocazion in corso...\n");
   // Chiusura file
   fclose(file);
