@@ -127,6 +127,7 @@ int main(int argc, char **argv){
 
   free(data_writer);
   free(data_reader);
+
   return 0;
 }
 
@@ -134,7 +135,7 @@ void* tbody_prod(void *args){
   data_t *data = (data_t*)args;
   unsigned short int n;
   char *temp_buf = NULL;
-  char *token;
+  char *token, *rest = NULL;
   size_t e;
 
   do {
@@ -143,6 +144,7 @@ void* tbody_prod(void *args){
     if(e != sizeof(n)) break;
 
     // Allocazione buffere dove scrivere la seguenza di caratteri
+    if(n <= 0) continue;
     temp_buf = (char*)malloc(n * sizeof(char));
 
     // Lettura dalla pipe della seguneza di caratteri
@@ -150,7 +152,10 @@ void* tbody_prod(void *args){
     if (e != n) break;
 
     // Inserimento nel buffer
-    while ((token = strtok_r(temp_buf, TOKENIZATOR, &temp_buf)) != NULL){
+    for (token = strtok_r(temp_buf, TOKENIZATOR, &rest);
+         token != NULL;
+         token = strtok_r(NULL, TOKENIZATOR, &rest))
+    {
       buffer_insert(data->buffer, strdup(token));
     }
 
@@ -159,6 +164,8 @@ void* tbody_prod(void *args){
     temp_buf = NULL;
 
   } while (true);
+
+  if(temp_buf != NULL) free(temp_buf);
 
   // Gestionne della SIGTERM andando ad inserirre un valore NULL nel buffer cio indicheerà che sarà terminato il programma
   for (int i = 0; i < data->num_sub_threads; i++)
@@ -176,7 +183,6 @@ void* tbody_cons_writer(void* args){
     str = buffer_remove(data->buffer);
     if(str == NULL) break;
     hash_table_insert(data->hash_table, str);
-
   } while (true);
 
   fprintf(stderr, "Terminazione thread cons writer\n");
@@ -196,11 +202,12 @@ void *tbody_cons_reader(void *args){
 
     // Si stampa nel file gestendo anche la muta eslusione 
     check(pthread_mutex_lock(&data->file_mutex) != 0, "Errore lock file", pthread_exit(NULL));
-    fprintf(stderr, "%s %d\n", key, num);
+    // fprintf(stderr, "%s %d\n", key, num);
     fprintf(data->file, "%s %d\n", key, num);
     fflush(data->file);
     check(pthread_mutex_unlock(&data->file_mutex) != 0, "Errore unlock file", pthread_exit(NULL));
 
+    free(key);
   } while(true);
 
   fprintf(stderr, "Terminazione thread cons reader\n");

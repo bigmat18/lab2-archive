@@ -83,9 +83,6 @@ char *buffer_remove(buffer_t *buffer) {
 }
 
 void buffer_destroy(buffer_t *buffer) {
-    for(unsigned int i = 0; i < PC_BUFFER_LEN; i++)
-        free(buffer->buffer[i]);
-
     free(buffer->buffer);
     check(pthread_mutex_destroy(&buffer->mutex) != 0, "Errore destroy", exit(1));
     check(pthread_cond_destroy(&buffer->empty) != 0, "Errore destroy", exit(1));

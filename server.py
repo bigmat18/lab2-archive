@@ -20,12 +20,9 @@ def handler_connection_A(conn: socket.socket, addr: str, pipe: int,
         
         lenght = struct.unpack("!H", data)[0]
         assert lenght > 0
-        
-        print(lenght)
-        
+                
         data = conn.recv(lenght)
         assert len(data.decode()) == lenght
-        print(data)
         
         mutex_pipe.acquire()
         os.write(pipe, struct.pack("H", lenght) + data)
@@ -53,7 +50,6 @@ def handler_connection_B(conn: socket.socket, addr: str, pipe: int,
 
             data = conn.recv(lenght)
             assert len(data.decode()) == lenght
-            print(data)
 
             num_byte += lenght
             

@@ -43,6 +43,7 @@ int main(int argv, char** argc){
     connection_destroy(connection);
   }
 
+  printf("\nDeallocazion in corso...\n");
   // Chiusura file
   fclose(file);
 
