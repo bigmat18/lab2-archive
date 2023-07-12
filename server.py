@@ -91,14 +91,14 @@ if __name__ == "__main__":
     if not os.path.exists('capolet'):
         os.mkfifo('capolet')
         
+    caposc = os.open('caposc', os.O_WRONLY)
+    capolet = os.open('capolet', os.O_WRONLY)
+        
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as server:
         try:
             server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
             server.bind((HOST, PORT))
             server.listen()
-            
-            caposc = os.open('caposc', os.O_WRONLY)
-            capolet = os.open('capolet', os.O_WRONLY)
             
             mutex_pipe = threading.Lock()
             mutex_log = threading.Lock()
@@ -117,8 +117,8 @@ if __name__ == "__main__":
         server.shutdown(socket.SHUT_RDWR)
         os.kill(archive.pid, signal.SIGTERM)
                 
-        os.close("caposc")
-        os.close("capolet")
+        os.close(capolet)
+        os.close(caposc)
             
         os.unlink("capolet")
         os.unlink("caposc")
