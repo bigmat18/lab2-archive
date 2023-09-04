@@ -2,6 +2,7 @@
 
 import sys, logging, os, argparse, struct, socket
 import concurrent.futures, threading, subprocess, signal
+import time
 
 HOST = "127.0.0.1"  
 PORT = 58449
@@ -56,11 +57,10 @@ def handler_connection_B(conn: socket.socket, addr: str, pipe: int,
             lenght = struct.unpack("!H", data)[0]
             if lenght == 0: break
             assert lenght > 0
-
+            
             # Recezione sequenza di byte che rappresenta la stringa
             data = conn.recv(lenght)
-            assert len(data.decode()) == lenght
-
+            assert len(data) == lenght
             num_byte += lenght
             
             # Scrittura byte sulla pipe
@@ -86,24 +86,29 @@ if __name__ == "__main__":
     args = parser.parse_args()
     assert args.number_thread > 0 or args.r > 0 or args.w > 0, "Il numero di thread deve essere maggiore di 0"
 
-    # Avvio programma archivio
-    if args.v:
-        archive = subprocess.Popen(["valgrind","--leak-check=full", 
-                          "--show-leak-kinds=all", 
-                          "--log-file=valgrind-%p.log", 
-                          "./archivio", str(args.r), str(args.w)])
-    else: 
-        archive = subprocess.Popen(['./archivio', str(args.r), str(args.w)])
-    
     # Creazione ed apertura delle pipe
     if not os.path.exists('caposc'):
         os.mkfifo('caposc')
         
     if not os.path.exists('capolet'):
         os.mkfifo('capolet')
-        
+
+    # Avvio programma archivio
+    if args.v:
+        archive = subprocess.Popen(["valgrind","--leak-check=full", 
+                                    "--show-leak-kinds=all", 
+                                    "--log-file=valgrind-%p.log", 
+                                    "./archivio", str(args.r), str(args.w)])
+    else: 
+        archive = subprocess.Popen(['./archivio', str(args.r), str(args.w)])
+
+    time.sleep(2)
+
     caposc = os.open('caposc', os.O_WRONLY)
     capolet = os.open('capolet', os.O_WRONLY)
+        
+    # print("[Pid archivio] " + str(archive.pid))
+    
         
     # Avvio server
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as server:

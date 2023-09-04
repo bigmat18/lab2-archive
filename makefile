@@ -32,6 +32,9 @@ client2.o: client2.c thread.h connection.h
 
 
 
-clean: 
+clean_all: 
 	rm -f *.o *.out $(EXECS) capolet caposc lettori.log server.log valgrind-*.log
+
+clean: 
+	rm capolet caposc lettori.log server.log valgrind-*.log
 
