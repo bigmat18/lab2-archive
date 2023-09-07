@@ -20,18 +20,18 @@ void *tbody(void *args){
 
   // Invio messaggio al server che dice che questa è una connessione di tipo b
   char type = 'b';
-  check(write(connection->fd_skt, &type, sizeof(type)) != sizeof(type), "Errore write 1", exit(1));
+  check(writeN(connection->fd_skt, &type, sizeof(type)) != sizeof(type), "Errore write 1", exit(1));
 
   // Ciclo che prende ed invia una riga alla volta al server mandato prima la lungezza e poi il buffer
   while((e = getline(&buffer, &n, file)) >= 0) {
 
-    check(e >= Max_sequence_length, "Sequenza di byte troppo lunga", exit(1));
+    check(e > Max_sequence_length, "Sequenza di byte troppo lunga", exit(1));
     // fprintf(stderr, "%zd - %s", e, buffer);
 
     tmp = htons(e);
-    check(write(connection->fd_skt, &tmp, sizeof(tmp)) != sizeof(tmp), "Errore write 2", exit(1));
+    check(writeN(connection->fd_skt, &tmp, sizeof(tmp)) != sizeof(tmp), "Errore write 2", exit(1));
 
-    check(write(connection->fd_skt, buffer, e) != e, "Errore write 3", exit(1));
+    check(writeN(connection->fd_skt, buffer, e) != e, "Errore write 3", exit(1));
     free(buffer);
     buffer = NULL;
   }
@@ -40,7 +40,7 @@ void *tbody(void *args){
 
   // Messaggio al buffer che dice che il file è terminato
   tmp = 0;
-  check(write(connection->fd_skt, &tmp, sizeof(tmp)) != sizeof(tmp), "Errore write 4", exit(1));
+  check(writeN(connection->fd_skt, &tmp, sizeof(tmp)) != sizeof(tmp), "Errore write 4", exit(1));
 
   // Chiusura connessione e del file
   connection_destroy(connection);

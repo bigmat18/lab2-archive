@@ -41,4 +41,7 @@ connection_t *connection_create();
 */
 void connection_destroy(connection_t *connection);
 
+ssize_t writeN(int fd, void *ptr, size_t n);
+ssize_t readN(int fd, void *ptr, size_t n);
+
 #endif

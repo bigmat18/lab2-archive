@@ -13,6 +13,26 @@ logging.basicConfig(filename=os.path.basename(sys.argv[0][:-3]) + '.log',
                     format='%(asctime)s - %(levelname)s - %(message)s')
 
 
+def readN(socket: socket.socket, n: int):
+  data: bytes = b''
+  length = 0
+  while len(data) < n:
+    packet = socket.recv(n - length)
+    if not packet:
+      raise Exception('Socket closed')
+    
+    data += packet
+    length += len(packet)
+  return data
+
+def writeN(pipe: int, data: bytes):
+  length = len(data)
+  while length > 0:
+    written = os.write(pipe, data)
+    data = data[written:]
+    length -= written
+
+
 # Gestore della connessione di tipo A
 def handler_connection_A(conn: socket.socket, addr: str, pipe: int, 
                          mutex_pipe: threading.Lock(), mutex_log: threading.Lock()):
@@ -20,18 +40,18 @@ def handler_connection_A(conn: socket.socket, addr: str, pipe: int,
         # print(f"Contattato A da {addr}")
         
         # Recezione del valore lenght che essendo max 2048 uso 2 byte
-        data = conn.recv(2)
+        data = readN(conn, 2)
         assert len(data) == 2
         lenght = struct.unpack("!H", data)[0]
         assert lenght > 0
                 
         # Recezione sequenza di byte che rappresenta la stringa
-        data = conn.recv(lenght)
-        assert len(data.decode()) == lenght
+        data = readN(conn, lenght)
+        assert len(data) == lenght
         
         # Scrittura byte sulla pipe
         mutex_pipe.acquire()
-        os.write(pipe, struct.pack("H", lenght) + data)
+        writeN(pipe, struct.pack("H", lenght) + data)
         mutex_pipe.release()
         
         # Scrittura sul file di logging riguardo questa connessione
@@ -51,7 +71,7 @@ def handler_connection_B(conn: socket.socket, addr: str, pipe: int,
         
         while True:
             # Recezione del valore lenght che essendo max 2048 uso 2 byte
-            data = conn.recv(2)
+            data = readN(conn, 2)
             assert len(data) == 2
             num_byte += 2
             lenght = struct.unpack("!H", data)[0]
@@ -59,13 +79,13 @@ def handler_connection_B(conn: socket.socket, addr: str, pipe: int,
             assert lenght > 0
             
             # Recezione sequenza di byte che rappresenta la stringa
-            data = conn.recv(lenght)
+            data = readN(conn, lenght)
             assert len(data) == lenght
             num_byte += lenght
             
             # Scrittura byte sulla pipe
             mutex_pipe.acquire()
-            os.write(pipe, struct.pack("H", lenght) + data)
+            writeN(pipe, struct.pack("H", lenght) + data)
             mutex_pipe.release()
 
         # Scrittura sul file di logging riguardo questa connessione

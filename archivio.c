@@ -10,6 +10,7 @@
 #include <unistd.h>
 #include "hash_table.h"
 #include "thread.h"
+#include "connection.h"
 
 // Stringa usata per tokenizare
 #define TOKENIZATOR ".,:; \n\r\t"
@@ -141,7 +142,7 @@ void* tbody_prod(void *args){
 
   do {
     // Lettura dalla pipe della lunghezza della stringa da leggere
-    e = read(data->pipe, &n, sizeof(n));
+    e = readN(data->pipe, &n, sizeof(n));
     if(e != sizeof(n)) break;
 
     // Allocazione buffere dove scrivere la seguenza di caratteri
@@ -149,7 +150,7 @@ void* tbody_prod(void *args){
     temp_buf = (char*)malloc((n + 1) * sizeof(char));
 
     // Lettura dalla pipe della seguneza di caratteri
-    e = read(data->pipe, temp_buf, n);
+    e = readN(data->pipe, temp_buf, n);
     if (e != n) break;
 
     temp_buf[n] = '\0';
@@ -174,46 +175,35 @@ void* tbody_prod(void *args){
   for (int i = 0; i < data->num_sub_threads; i++)
     buffer_insert(data->buffer, NULL);
 
-  // fprintf(stderr, "Terminazione thread prod\n");
   pthread_exit(NULL);
 }
 
 void* tbody_cons_writer(void* args){
   data_t *data = (data_t *)args;
   char *str;
-  do {
+  while((str = buffer_remove(data->buffer)) != NULL) {
     // Si prende l'elemento dal buffer e si inserisce nell'hash table
-    str = buffer_remove(data->buffer);
-    if(str == NULL) break;
     hash_table_insert(data->hash_table, str);
-  } while (true);
-
-  // fprintf(stderr, "Terminazione thread cons writer\n");
+  }
   pthread_exit(NULL);
 }
 
 void *tbody_cons_reader(void *args){
   data_t *data = (data_t *)args;
   char *key;
-  do {
-    // Si prende la stringa dal buffer
-    key = buffer_remove(data->buffer);
-    if(key == NULL) break;
-
+  while((key = buffer_remove(data->buffer)) != NULL) {
     // Si prende il numero di occorrenze della stringa
     int num = hash_table_count(data->hash_table, key);
 
     // Si stampa nel file gestendo anche la muta eslusione 
     check(pthread_mutex_lock(&data->file_mutex) != 0, "Errore lock file", pthread_exit(NULL));
-    // fprintf(stderr, "%s %d\n", key, num);
     fprintf(data->file, "%s %d\n", key, num);
-    fflush(data->file);
     check(pthread_mutex_unlock(&data->file_mutex) != 0, "Errore unlock file", pthread_exit(NULL));
 
     free(key);
-  } while(true);
+  }
 
-  // fprintf(stderr, "Terminazione thread cons reader\n");
+  fflush(data->file);
   pthread_exit(NULL);
 }
 
@@ -242,6 +232,5 @@ void *tbody_signals_handler(void *args) {
 
   }
 
-  // fprintf(stderr, "Terminazione thread handler signals\n");
   pthread_exit(NULL);
 }

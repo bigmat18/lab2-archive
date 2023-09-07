@@ -8,10 +8,10 @@ all: $(EXECS)
 
 
 
-archivio: archivio.o hash_table.o buffer.o thread.o
+archivio: archivio.o hash_table.o buffer.o thread.o connection.o
 		$(CC) $(LDFLAGS) -o $@ $^ $(LDLIBS)
 
-archivio.o: archivio.c hash_table.h buffer.h thread.h
+archivio.o: archivio.c hash_table.h buffer.h thread.h connection.h
 		$(CC) $(CFLAGS) -c $<
 
 

@@ -25,14 +25,14 @@ int main(int argv, char** argc){
   // Ciclo che prende una line avvia una connessione di tipo A ed invia i dati (prima lunghezza e poi buffer)
   while ((e = getline(&buffer, &n, file)) >= 0) {
     connection = connection_create();
-    check(write(connection->fd_skt, &type, sizeof(type)) != sizeof(type), "Errore write 1", exit(1));
+    check(writeN(connection->fd_skt, &type, sizeof(type)) != sizeof(type), "Errore write 1", exit(1));
 
-    check(e >= Max_sequence_length, "Sequenza di byte troppo lunga", exit(1));
+    check(e > Max_sequence_length, "Sequenza di byte troppo lunga", exit(1));
 
     tmp = htons(e);
-    check(write(connection->fd_skt, &tmp, sizeof(tmp)) != sizeof(tmp), "Errore write 2", exit(1));
+    check(writeN(connection->fd_skt, &tmp, sizeof(tmp)) != sizeof(tmp), "Errore write 2", exit(1));
 
-    check(write(connection->fd_skt, buffer, e) != e, "Errore write 3", exit(1));
+    check(writeN(connection->fd_skt, buffer, e) != e, "Errore write 3", exit(1));
     // fprintf(stderr, "%zd - %s", e, buffer);
 
     // Pulizia buffer per ciclo successiovo
