@@ -144,7 +144,6 @@ if __name__ == "__main__":
                 
                 # Ciclo che gestisce l'arrivo delle rischieste di connessione da parte dei client
                 while True:
-                    # print("In attesa di un client...")
                     conn, addr = server.accept()
                     data = conn.recv(1).decode()
                     assert data == 'a' or data == 'b';
