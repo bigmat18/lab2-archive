@@ -122,7 +122,6 @@ if __name__ == "__main__":
     else: 
         archive = subprocess.Popen(['./archivio', str(args.r), str(args.w)])
 
-    time.sleep(2)
 
     caposc = os.open('caposc', os.O_WRONLY)
     capolet = os.open('capolet', os.O_WRONLY)
